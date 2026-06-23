@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+
+# Local data captures and generated reports can become large or machine-specific.
+LOG*.CSV
+*_markers.csv
+imu_report*.html
+*.log
+
+# Local editor and environment files.
+.venv/
+venv/
+node_modules/
+node_modules
+.idea/
+.vscode/
