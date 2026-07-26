@@ -24,8 +24,10 @@ The system is designed as a research prototype. It focuses on relative and strok
 | `live_serial.py` | Terminal live monitor for USB serial |
 | `live_ble_uart.py` | Terminal live monitor for BLE UART |
 | `analyze_log.py` | Offline CSV analyzer and HTML report generator |
+| `HTML_REPORT_GUIDE.md` | Step-by-step guide for creating and sharing offline HTML reports |
 | `technical_program_overview.md` | Technical explanation of workflow and graph calculations |
 | `technical_program_overview.pdf` | PDF version of the technical overview |
+| `output/pdf/` | Coach interview sheets, usage guides, and project handover PDFs |
 
 ## Hardware
 
@@ -223,34 +225,46 @@ List BLE devices:
 
 ## Offline Analysis
 
-Run offline analysis on a CSV file:
+Run offline analysis on a folder that contains both SEAT and BOAT CSV files:
 
 ```bash
-/usr/local/bin/python3 analyze_log.py /Users/mahdoui/Downloads/LOG002.CSV \
-  --output /Users/mahdoui/Downloads/imu_report.html
+/usr/local/bin/python3 analyze_log.py /path/to/folder_with_csv_files \
+  --output rowing_report.html \
+  --label rowing_report \
+  --min-peak-ms 800 \
+  --smooth-window 10
 ```
 
-Run offline analysis with a BOAT/reference file:
+Run offline analysis with explicit files:
 
 ```bash
-/usr/local/bin/python3 analyze_log.py /Users/mahdoui/Downloads/SEAT_LOG.csv \
-  --reference /Users/mahdoui/Downloads/BOAT_LOG.csv \
-  --output /Users/mahdoui/Downloads/imu_report.html
+/usr/local/bin/python3 analyze_log.py /path/to/SEAT_LOG.csv /path/to/BOAT_LOG.csv \
+  --output rowing_report.html \
+  --label rowing_report \
+  --min-peak-ms 800 \
+  --smooth-window 10
 ```
 
 Open the generated HTML report in a browser.
 
+For the full workflow, including coach-session recording, athlete segmentation, and calibration notes, see:
+
+```text
+HTML_REPORT_GUIDE.md
+```
+
 The offline report includes:
 
-- sample count
-- sampling rate
-- sequence gaps
-- axis statistics
-- stroke estimates
-- stroke-shape plots
-- optional `SEAT - BOAT` relative plots
-- velocity proxies
-- smoothness indicators
+- coach-facing stroke metrics
+- athlete time segmentation
+- seat and boat acceleration views
+- seat and boat velocity proxy views
+- stroke overlay comparisons
+- stroke-by-stroke metrics
+- optional athlete-specific HTML exports
+- coach interview and usage PDFs in `output/pdf/`
+
+Current stroke segmentation is velocity-based. Earlier versions relied more directly on acceleration peaks. The current offline report estimates a seat movement speed proxy and detects the change into positive drive movement. A stroke is then measured from one detected drive start to the next detected drive start.
 
 ## How the Main Signals Are Interpreted
 
@@ -302,8 +316,8 @@ Check that the SD card is inserted before boot and that the firmware prints a `L
 - Not hardware-synchronized
 - Not waterproof-certified
 - Velocity values are proxies, not calibrated m/s
-- Power transfer is a proxy, not watts
-- Stroke detection is peak-based and should be validated
+- Boat speed change is a proxy and should be interpreted as relative movement feedback
+- Stroke detection is velocity-based and should be checked against a manual stroke count during calibration
 - Mounting quality strongly affects signal quality
 
 ## Suggested Demo Flow
@@ -316,8 +330,9 @@ Check that the SD card is inserted before boot and that the firmware prints a `L
 6. Perform a short movement sequence.
 7. Enable voice feedback.
 8. Stop recording.
-9. Run offline analysis on the recorded CSV.
+9. Run offline analysis on the SEAT and BOAT CSV files.
 10. Open the HTML report.
+11. Segment athletes by the time windows written down during the session.
 
 ## License / Status
 

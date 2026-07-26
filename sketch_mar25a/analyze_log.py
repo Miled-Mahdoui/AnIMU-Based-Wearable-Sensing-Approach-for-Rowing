@@ -608,63 +608,78 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
     data_json = json.dumps(payload, separators=(",", ":"))
     return f"""
 <section id="interactiveDashboard" class="interactive">
-  <h2>Coach dashboard</h2>
-  <p class="note">Use this section to choose the forward axis, split one recording into athletes, inspect a single stroke, and export separate HTML reports.</p>
   <div class="controls">
-    <label>Forward axis
-      <select id="axisSelect">
-        <option value="acc_x_ms2">X longitudinal</option>
-        <option value="acc_y_ms2" selected>Y lateral as forward</option>
-        <option value="acc_z_ms2">Z vertical as forward</option>
+    <label><span data-i18n="language">Language</span>
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="pl">Polski</option>
       </select>
     </label>
-    <label><input id="invertAxis" type="checkbox"> invert forward sign</label>
-    <label><input id="invertSeatOnly" type="checkbox"> invert SEAT only</label>
-    <label><input id="swapSeatBoat" type="checkbox"> swap SEAT/BOAT data</label>
-    <label>Minimum stroke gap ms <input id="minPeakMs" type="number" step="10"></label>
-    <label>Smoothing samples <input id="smoothWindow" type="number" step="1" min="1"></label>
   </div>
-  <p class="note">Smoothing makes the seat movement signal calmer before stroke timing is detected. Minimum stroke gap prevents very small repeated movements from being counted as extra strokes.</p>
+  <h2 data-i18n="coachDashboard">Coach dashboard</h2>
+  <p class="note" data-i18n="coachDashboardNote">Use this section to choose the forward axis, split one recording into athletes, inspect a single stroke, and export separate HTML reports.</p>
+  <h3 data-i18n="sensorAlignment">Sensor alignment</h3>
   <div class="controls">
-    <label><input class="timeMetric" value="relativeAcc" type="checkbox"> SEAT-BOAT acceleration</label>
-    <label><input class="timeMetric" value="seatAcc" type="checkbox" checked> SEAT-only acceleration</label>
-    <label><input class="timeMetric" value="boatAcc" type="checkbox" checked> BOAT-only acceleration</label>
-    <label><input id="normalizeTimeGraph" type="checkbox" checked> normalize graph lines</label>
-    <label><input id="showStrokeEvents" type="checkbox" checked> stroke start/end lines</label>
-    <label>Time label detail
-      <select id="timePrecision">
-        <option value="1">simple</option>
-        <option value="2">more exact</option>
-        <option value="0">rough</option>
+    <label><span data-i18n="forwardAxis">Forward axis</span>
+      <select id="axisSelect">
+        <option value="acc_x_ms2" data-i18n="xLongitudinal">X longitudinal</option>
+        <option value="acc_y_ms2" selected data-i18n="yLateralForward">Y lateral as forward</option>
+        <option value="acc_z_ms2" data-i18n="zVerticalForward">Z vertical as forward</option>
       </select>
     </label>
-    <label>Zoom start s <input id="zoomStart" type="number" step="0.1"></label>
-    <label>Zoom end s <input id="zoomEnd" type="number" step="0.1"></label>
-    <button id="applyZoom" type="button">Apply zoom</button>
-    <button id="resetZoom" type="button">Reset zoom</button>
-    <button id="addSegment" type="button">Save visible time range as athlete</button>
+    <label><input id="invertAxis" type="checkbox"> <span data-i18n="invertForwardSign">invert forward sign</span></label>
+    <label><input id="invertSeatOnly" type="checkbox"> <span data-i18n="invertSeatOnly">invert SEAT only</span></label>
+    <label><input id="swapSeatBoat" type="checkbox"> <span data-i18n="swapSeatBoat">swap SEAT/BOAT data</span></label>
+  </div>
+  <h3 data-i18n="strokeDetectionTuning">Stroke detection tuning</h3>
+  <p class="note" data-i18n="strokeDetectionNote">For a new setup, count the strokes manually in the first minute. Then adjust these two controls until the dashboard stroke count matches the manual count as closely as possible.</p>
+  <div class="controls">
+    <label><span data-i18n="minimumStrokeGap">Stroke detection: minimum gap ms</span> <input id="minPeakMs" type="number" step="10"></label>
+    <label><span data-i18n="smoothingSamples">Stroke detection: smoothing samples</span> <input id="smoothWindow" type="number" step="1" min="1"></label>
+  </div>
+  <p class="note" data-i18n="smoothingNote">Minimum gap controls how soon the next stroke is allowed to start. Smoothing calms the acceleration before velocity is estimated, so small vibrations are less likely to become false strokes.</p>
+  <h3 data-i18n="timeGraph">Time graph</h3>
+  <div class="controls">
+    <label><input class="timeMetric" value="relativeAcc" type="checkbox"> <span data-i18n="relativeAcceleration">SEAT-only acceleration</span></label>
+    <label><input class="timeMetric" value="seatAcc" type="checkbox" checked> <span data-i18n="seatAcceleration">SEAT-only acceleration</span></label>
+    <label><input class="timeMetric" value="boatAcc" type="checkbox" checked> <span data-i18n="boatAcceleration">BOAT-only acceleration</span></label>
+    <label><input id="normalizeTimeGraph" type="checkbox" checked> <span data-i18n="normalizeGraphLines">normalize graph lines</span></label>
+    <label><input id="showStrokeEvents" type="checkbox" checked> <span data-i18n="strokeStartEndLines">stroke start/end lines</span></label>
+    <label><span data-i18n="timeLabelDetail">Time label detail</span>
+      <select id="timePrecision">
+        <option value="1" data-i18n="simple">simple</option>
+        <option value="2" data-i18n="moreExact">more exact</option>
+        <option value="0" data-i18n="rough">rough</option>
+      </select>
+    </label>
+    <label><span data-i18n="zoomStart">Zoom start s</span> <input id="zoomStart" type="number" step="0.1"></label>
+    <label><span data-i18n="zoomEnd">Zoom end s</span> <input id="zoomEnd" type="number" step="0.1"></label>
+    <button id="applyZoom" type="button" data-i18n="applyZoom">Apply zoom</button>
+    <button id="resetZoom" type="button" data-i18n="resetZoom">Reset zoom</button>
+    <button id="addSegment" type="button" data-i18n="saveVisibleRange">Save visible time range as athlete</button>
   </div>
   <div id="interactiveMetrics" class="grid"></div>
-  <h3>Segments / athletes</h3>
-  <p class="note">Set a visible time range with the graph zoom or zoom fields, then save it as an athlete. Rename athletes, add coach notes, and export each row as HTML.</p>
+  <h3 data-i18n="segmentsAthletes">Segments / athletes</h3>
+  <p class="note" data-i18n="segmentsNote">Set a visible time range with the graph zoom or zoom fields, then save it as an athlete. Rename athletes, add coach notes, and export each row as HTML.</p>
   <table id="segmentTable">
-    <thead><tr><th>Use</th><th>Name</th><th>Time</th><th>Strokes</th><th>Stroke rate</th><th>Rhythm consistency</th><th>Strongest seat drive speed</th><th>Smoothness</th><th>Coach message before export</th><th></th></tr></thead>
+    <thead><tr><th data-i18n="use">Use</th><th data-i18n="name">Name</th><th data-i18n="time">Time</th><th data-i18n="strokes">Strokes</th><th data-i18n="strokeRate">Stroke rate</th><th data-i18n="rhythmConsistency">Rhythm consistency</th><th data-i18n="strongestSeatDriveSpeed">Strongest seat drive speed</th><th data-i18n="smoothness">Smoothness</th><th data-i18n="coachMessageBeforeExport">Coach message before export</th><th></th></tr></thead>
     <tbody></tbody>
   </table>
   <canvas id="timeCanvas" width="1100" height="520"></canvas>
-  <p class="note">Time graph: shows the first enabled segment. Blue lines mark detected stroke starts, red lines mark detected stroke ends. Drag across the graph to zoom; double click to reset.</p>
+  <p class="note" data-i18n="timeGraphNote">Time graph: shows the first enabled segment. Blue lines mark detected stroke starts, red lines mark detected stroke ends. Drag across the graph to zoom; double click to reset.</p>
+  <h3 data-i18n="selectedStroke">Selected stroke</h3>
   <div class="controls">
-    <label>Stroke to inspect
+    <label><span data-i18n="strokeToInspect">Stroke to inspect</span>
       <select id="strokeSelect"></select>
     </label>
-    <label><input class="strokeMetric" value="acc" type="checkbox" checked> SEAT-BOAT acceleration</label>
-    <label><input class="strokeMetric" value="seatAcc" type="checkbox"> SEAT-only acceleration</label>
-    <label><input class="strokeMetric" value="boatAcc" type="checkbox"> BOAT-only acceleration</label>
-    <label><input class="strokeMetric" value="velocity" type="checkbox"> SEAT-BOAT velocity proxy</label>
-    <label><input class="strokeMetric" value="seatVelocity" type="checkbox"> SEAT velocity proxy</label>
-    <label><input class="strokeMetric" value="boatVelocity" type="checkbox"> BOAT velocity proxy</label>
-    <label><input id="showAverageStroke" type="checkbox" checked> show segment average</label>
-    <label>Phase labels
+    <label><input class="strokeMetric" value="acc" type="checkbox" checked> <span data-i18n="relativeAcceleration">SEAT-only acceleration</span></label>
+    <label><input class="strokeMetric" value="seatAcc" type="checkbox"> <span data-i18n="seatAcceleration">SEAT-only acceleration</span></label>
+    <label><input class="strokeMetric" value="boatAcc" type="checkbox"> <span data-i18n="boatAcceleration">BOAT-only acceleration</span></label>
+    <label><input class="strokeMetric" value="velocity" type="checkbox"> <span data-i18n="relativeVelocityProxy">SEAT movement speed proxy</span></label>
+    <label><input class="strokeMetric" value="seatVelocity" type="checkbox"> <span data-i18n="seatVelocityProxy">SEAT velocity proxy</span></label>
+    <label><input class="strokeMetric" value="boatVelocity" type="checkbox"> <span data-i18n="boatVelocityProxy">BOAT velocity proxy</span></label>
+    <label><input id="showAverageStroke" type="checkbox" checked> <span data-i18n="showSegmentAverage">show segment average</span></label>
+    <label><span data-i18n="phaseLabels">Phase labels</span>
       <select id="phaseTickStep">
         <option value="10">10%</option>
         <option value="5">5%</option>
@@ -674,32 +689,152 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
   </div>
   <div id="strokeMetrics" class="grid"></div>
   <canvas id="strokeCanvas" width="1100" height="440"></canvas>
-  <p class="note">Single-stroke graph: solid lines show the selected stroke; dashed lines show the segment average. The purple vertical line marks where the seat moves fastest in the stroke. Drag to zoom inside the phase graph; double click to reset.</p>
+  <p class="note" data-i18n="singleStrokeGraphNote">Single-stroke graph: solid lines show the selected stroke; dashed lines show the segment average. The purple vertical line marks where the seat moves fastest in the stroke. Drag to zoom inside the phase graph; double click to reset.</p>
   <canvas id="strokeVelocityCanvas" width="1100" height="360"></canvas>
-  <p class="note">Selected-stroke velocity view: same selected stroke, focused on velocity proxies. The purple line marks the strongest seat drive speed.</p>
+  <p class="note" data-i18n="selectedStrokeVelocityNote">Selected-stroke velocity view: same selected stroke, focused on velocity proxies. The purple line marks the strongest seat drive speed.</p>
+  <h3 data-i18n="strokeOverlay">Stroke overlay</h3>
   <div class="controls">
-    <label>Overlay metric
+    <label><span data-i18n="overlayMetric">Overlay metric</span>
       <select id="overlayMetric">
-        <option value="velocity">SEAT-BOAT velocity proxy</option>
-        <option value="boatVelocity">BOAT velocity proxy</option>
-        <option value="seatVelocity">SEAT velocity proxy</option>
-        <option value="acc">SEAT-BOAT acceleration</option>
-        <option value="seatAcc">SEAT-only acceleration</option>
-        <option value="boatAcc">BOAT-only acceleration</option>
+        <option value="velocity" data-i18n="relativeVelocityProxy">SEAT movement speed proxy</option>
+        <option value="boatVelocity" data-i18n="boatVelocityProxy">BOAT velocity proxy</option>
+        <option value="seatVelocity" data-i18n="seatVelocityProxy">SEAT velocity proxy</option>
+        <option value="acc" data-i18n="relativeAcceleration">SEAT-only acceleration</option>
+        <option value="seatAcc" data-i18n="seatAcceleration">SEAT-only acceleration</option>
+        <option value="boatAcc" data-i18n="boatAcceleration">BOAT-only acceleration</option>
       </select>
     </label>
     <span id="strokeOverlayControls"></span>
   </div>
   <canvas id="strokeOverlayCanvas" width="1100" height="400"></canvas>
-  <p class="note">Stroke overlay: selected strokes start at 0s and keep their real duration, so timing differences stay visible.</p>
-  <h3>Stroke-by-stroke values</h3>
+  <p class="note" data-i18n="strokeOverlayNote">Stroke overlay: selected strokes start at 0s and keep their real duration, so timing differences stay visible.</p>
+  <h3 data-i18n="strokeByStrokeValues">Stroke-by-stroke values</h3>
   <table id="allStrokeTable">
-    <thead><tr><th>#</th><th>Time</th><th>Stroke time</th><th>Stroke rate</th><th>Strongest seat drive speed</th><th>SEAT-BOAT peak acceleration</th><th>BOAT velocity gain</th><th>Smoothness</th></tr></thead>
+    <thead><tr><th>#</th><th data-i18n="athlete">Athlete</th><th data-i18n="time">Time</th><th data-i18n="strokeTime">Stroke time</th><th data-i18n="strokeRate">Stroke rate</th><th data-i18n="strongestSeatDriveSpeed">Strongest seat drive speed</th><th data-i18n="peakAcceleration">SEAT-only peak acceleration</th><th data-i18n="boatVelocityChange">BOAT velocity change</th><th data-i18n="smoothness">Smoothness</th></tr></thead>
     <tbody></tbody>
   </table>
 </section>
 <script>
 const IMU_DATA = {data_json};
+const I18N = {{
+  en: {{}},
+  pl: {{
+    language: "Język",
+    coachDashboard: "Panel trenera",
+    athleteDashboard: "Panel zawodnika",
+    coachDashboardNote: "W tej sekcji można wybrać oś ruchu, podzielić nagranie na zawodników, obejrzeć pojedyncze pociągnięcie i wyeksportować osobne raporty HTML.",
+    forwardAxis: "Oś kierunku ruchu",
+    xLongitudinal: "X wzdłużna",
+    yLateralForward: "Y boczna jako kierunek jazdy",
+    zVerticalForward: "Z pionowa jako kierunek jazdy",
+    invertForwardSign: "odwróć znak kierunku",
+    invertSeatOnly: "odwróć tylko SEAT",
+    swapSeatBoat: "zamień dane SEAT/BOAT",
+    sensorAlignment: "Ustawienie czujników",
+    strokeDetectionTuning: "Dostrajanie wykrywania pociągnięć",
+    strokeDetectionNote: "Przy nowym ustawieniu policz ręcznie pociągnięcia w pierwszej minucie. Potem dostosuj te dwa ustawienia, aż liczba pociągnięć w panelu będzie możliwie bliska ręcznemu liczeniu.",
+    minimumStrokeGap: "Wykrywanie pociągnięć: minimalny odstęp ms",
+    smoothingSamples: "Wykrywanie pociągnięć: wygładzanie próbek",
+    smoothingNote: "Minimalny odstęp określa, jak szybko może rozpocząć się kolejne pociągnięcie. Wygładzanie uspokaja przyspieszenie przed estymacją prędkości, dzięki czemu małe drgania rzadziej tworzą fałszywe pociągnięcia.",
+    relativeAcceleration: "Przyspieszenie tylko SEAT",
+    seatAcceleration: "Przyspieszenie tylko SEAT",
+    boatAcceleration: "Przyspieszenie tylko BOAT",
+    normalizeGraphLines: "normalizuj linie wykresu",
+    strokeStartEndLines: "linie początku/końca pociągnięcia",
+    timeLabelDetail: "Dokładność etykiet czasu",
+    simple: "prosto",
+    moreExact: "dokładniej",
+    rough: "zgrubnie",
+    zoomStart: "Początek zoomu s",
+    zoomEnd: "Koniec zoomu s",
+    applyZoom: "Zastosuj zoom",
+    resetZoom: "Resetuj zoom",
+    saveVisibleRange: "Zapisz widoczny zakres jako zawodnika",
+    segmentsAthletes: "Segmenty / zawodnicy",
+    segmentsNote: "Ustaw widoczny zakres czasu przez zoom lub pola czasu, a potem zapisz go jako zawodnika. Możesz zmienić nazwy, dodać notatki trenera i wyeksportować każdy wiersz jako HTML.",
+    use: "Użyj",
+    name: "Nazwa",
+    time: "Czas",
+    strokes: "Pociągnięcia",
+    strokeRate: "Tempo pociągnięć",
+    rhythmConsistency: "Regularność rytmu",
+    strongestSeatDriveSpeed: "Największa prędkość siedziska w napędzie",
+    smoothness: "Płynność",
+    coachMessageBeforeExport: "Komentarz trenera przed eksportem",
+    timeGraphNote: "Wykres czasu pokazuje pierwszy aktywny segment. Niebieskie linie oznaczają początki pociągnięć, czerwone końce. Przeciągnij po wykresie, aby powiększyć; kliknij dwa razy, aby zresetować.",
+    timeGraph: "Wykres czasu",
+    strokeToInspect: "Pociągnięcie do analizy",
+    relativeVelocityProxy: "Proxy prędkości ruchu SEAT",
+    seatVelocityProxy: "Proxy prędkości SEAT",
+    boatVelocityProxy: "Proxy prędkości BOAT",
+    showSegmentAverage: "pokaż średnią segmentu",
+    phaseLabels: "Etykiety fazy",
+    singleStrokeGraphNote: "Wykres pojedynczego pociągnięcia: linie ciągłe pokazują wybrane pociągnięcie, przerywane średnią segmentu. Fioletowa linia pokazuje miejsce największej prędkości siedziska. Przeciągnij, aby powiększyć; kliknij dwa razy, aby zresetować.",
+    selectedStrokeVelocityNote: "Widok prędkości wybranego pociągnięcia: skupia się na proxy prędkości. Fioletowa linia oznacza największą prędkość siedziska w napędzie.",
+    overlayMetric: "Metryka nakładania",
+    strokeOverlay: "Nakładanie pociągnięć",
+    strokeOverlayNote: "Nakładanie pociągnięć: wybrane pociągnięcia zaczynają się od 0 s i zachowują rzeczywisty czas trwania, więc różnice czasowe pozostają widoczne.",
+    strokeByStrokeValues: "Wartości pociągnięcie po pociągnięciu",
+    strokeTime: "Czas pociągnięcia",
+    peakAcceleration: "Szczytowe przyspieszenie tylko SEAT",
+    boatVelocityGain: "Zmiana proxy prędkości BOAT",
+    boatVelocityChange: "Zmiana proxy prędkości BOAT",
+    axis: "Oś",
+    detectedStrokes: "Wykryte pociągnięcia",
+    inSelectedRecording: "W wybranym nagraniu",
+    averagePace: "Średnie tempo",
+    higherRegularTiming: "Wyżej oznacza bardziej regularny rytm",
+    lowerLessJerky: "Niżej oznacza mniej szarpany ruch siedziska",
+    fullRecording: "Całe nagranie",
+    shortNoteForAthlete: "Krótka notatka dla zawodnika",
+    remove: "Usuń",
+    noCompleteStroke: "Brak pełnego pociągnięcia w tym segmencie.",
+    selectedStroke: "Wybrane pociągnięcie",
+    timeDriveChange: "Czas od jednej zmiany kierunku napędu do następnej",
+    paceForStroke: "Tempo dla tego pociągnięcia",
+    whereSeatFastest: "Miejsce, w którym siedzisko porusza się najszybciej",
+    strongestSeatAcceleration: "Najsilniejsze przyspieszenie siedziska",
+    boatVelocityGainNote: "Zmiana proxy prędkości BOAT od początku do końca pociągnięcia; może być dodatnia albo ujemna",
+    boatVelocityChangeNote: "Zmiana proxy prędkości BOAT od początku do końca pociągnięcia; może być dodatnia albo ujemna",
+    lowerSmoother: "Niżej oznacza płynniejszy ruch siedziska",
+    strongestSpeed: "największa prędkość",
+    selectedStrokeSpeedCurve: "krzywa prędkości wybranego pociągnięcia",
+    avgSpeedCurve: "średnia krzywa prędkości",
+    timeInSelectedSegment: "czas w wybranym segmencie (s)",
+    strokePhase: "faza pociągnięcia (%)",
+    strokeTimeAxis: "czas pociągnięcia (s)",
+    noData: "Brak danych w tym wykresie/zakresie zoomu",
+    byStrokeTime: "według czasu pociągnięcia (s)",
+    start: "początek",
+    end: "koniec",
+    athlete: "Zawodnik",
+    globalSignInverted: "odwrócony znak globalny",
+    seatSignInverted: "odwrócony znak SEAT",
+    seatBoatSwapped: "SEAT/BOAT zamienione",
+    seatBoatMode: "tryb dwóch czujników",
+    seatOnlyMode: "tylko SEAT",
+  }}
+}};
+let currentLanguage = "en";
+function tr(key) {{
+  return (I18N[currentLanguage] && I18N[currentLanguage][key]) || key;
+}}
+function text(key, fallback) {{
+  return currentLanguage === "pl" ? tr(key) : fallback;
+}}
+function applyLanguage() {{
+  document.querySelectorAll("[data-i18n]").forEach(element => {{
+    const key = element.dataset.i18n;
+    if (currentLanguage === "pl" && I18N.pl[key]) element.textContent = I18N.pl[key];
+    else if (element.dataset.en) element.textContent = element.dataset.en;
+  }});
+}}
+function initLanguage() {{
+  document.querySelectorAll("[data-i18n]").forEach(element => {{
+    if (!element.dataset.en) element.dataset.en = element.textContent;
+  }});
+  applyLanguage();
+}}
 const axisNames = {{
   acc_x_ms2: "X / longitudinal",
   acc_y_ms2: "Y / lateral",
@@ -711,7 +846,7 @@ let zoomRange = null;
 let strokeZoomRange = null;
 let strokeVelocityZoomRange = null;
 let strokeOverlayZoomRange = null;
-let selectedOverlayStrokes = new Set([0, 1, 2]);
+let selectedOverlayStrokes = new Set();
 let selectedStrokeIndex = 0;
 
 function mean(values) {{
@@ -837,9 +972,9 @@ function selectedForward() {{
 }}
 function sourceModeLabel() {{
   const parts = [];
-  parts.push(document.getElementById("swapSeatBoat").checked && IMU_DATA.hasBoat ? "SEAT/BOAT swapped" : (IMU_DATA.hasBoat ? "SEAT - BOAT" : "SEAT only"));
-  if (document.getElementById("invertAxis").checked) parts.push("global sign inverted");
-  if (document.getElementById("invertSeatOnly").checked) parts.push("SEAT sign inverted");
+  parts.push(document.getElementById("swapSeatBoat").checked && IMU_DATA.hasBoat ? text("seatBoatSwapped", "SEAT/BOAT swapped") : (IMU_DATA.hasBoat ? text("seatBoatMode", "two-sensor mode") : text("seatOnlyMode", "SEAT only")));
+  if (document.getElementById("invertAxis").checked) parts.push(text("globalSignInverted", "global sign inverted"));
+  if (document.getElementById("invertSeatOnly").checked) parts.push(text("seatSignInverted", "SEAT sign inverted"));
   return parts.join(" · ");
 }}
 function axisValues(sourceName) {{
@@ -909,9 +1044,8 @@ function analyzeRange(start, end) {{
     const boatVelImpactSeg = boatProcessed.velocity.slice(startIndex, endIndex + 1);
     const seatVelSeg = integrateVelocity(timeSeg, seatAccSeg, true);
     const boatVelSeg = integrateVelocity(timeSeg, boatAccSeg, true);
-    const boatVelocityGain = boatVelImpactSeg.length ? Math.max(...boatVelImpactSeg) - boatVelImpactSeg[0] : 0;
-    const boatVelocityNetChange = boatVelImpactSeg.length ? boatVelImpactSeg[boatVelImpactSeg.length - 1] - boatVelImpactSeg[0] : 0;
-    accStrokes.push(resample(accSeg));
+    const boatVelocityChange = boatVelImpactSeg.length ? boatVelImpactSeg[boatVelImpactSeg.length - 1] - boatVelImpactSeg[0] : 0;
+    accStrokes.push(resample(seatAccSeg));
     velocityStrokes.push(resample(velSeg));
     powerStrokes.push(resample(powerSeg));
     strokeSegments.push({{
@@ -921,14 +1055,14 @@ function analyzeRange(start, end) {{
       time: timeSeg,
       speed: positivePeakValue(velSeg),
       power: Math.max(...powerSeg),
-      peakAcc: Math.max(...accSeg),
+      peakAcc: seatAccSeg.length ? Math.max(...seatAccSeg) : 0,
       smoothness: jerkRms(timeSeg, accSeg),
       peakPhase: velSeg.length ? positivePeakIndex(velSeg) / Math.max(1, velSeg.length - 1) * 100 : 0,
       phase: Array.from({{ length: 101 }}, (_, phase) => phase),
       acc: accStrokes[accStrokes.length - 1],
       velocity: velocityStrokes[velocityStrokes.length - 1],
       powerSeries: powerStrokes[powerStrokes.length - 1],
-      rawAcc: accSeg,
+      rawAcc: seatAccSeg,
       rawVelocity: velSeg,
       rawSeatAcc: seatAccSeg,
       rawBoatAcc: boatAccSeg,
@@ -938,8 +1072,8 @@ function analyzeRange(start, end) {{
       boatAcc: resample(boatAccSeg),
       seatVelocity: resample(seatVelSeg),
       boatVelocity: resample(boatVelSeg),
-      boatVelocityGain,
-      boatVelocityNetChange,
+      boatVelocityGain: boatVelocityChange,
+      boatVelocityChange,
       seatPeakAcc: seatAccSeg.length ? Math.max(...seatAccSeg) : 0,
       boatPeakAcc: boatAccSeg.length ? Math.max(...boatAccSeg) : 0,
     }});
@@ -973,7 +1107,7 @@ function analyzeRange(start, end) {{
     rhythmStd: std(durations),
     speed: positivePeakValue(velocity),
     speedPeakPhase: strokeSegments.length ? avgStrongestSeatSpeedPhase : (velocity.length ? localTimes[speedPeakIndex] / duration * 100 : 0),
-    peakAcc: smoothed.length ? Math.max(...smoothed) : 0,
+    peakAcc: seatProcessed.smoothed.length ? Math.max(...seatProcessed.smoothed) : 0,
     peakPower: power.length ? Math.max(...power) : 0,
     smoothness: jerkRms(localTimes, smoothed),
     avgStrokeTime: mean(durations),
@@ -1004,9 +1138,9 @@ function selectedTimeMetrics(analysis, name) {{
     boatVelocity: "#059669",
   }};
   const labels = {{
-    relativeAcc: "SEAT-BOAT acceleration",
-    seatAcc: "SEAT-only acceleration",
-    boatAcc: "BOAT-only acceleration",
+    relativeAcc: text("relativeAcceleration", "SEAT-only acceleration"),
+    seatAcc: text("seatAcceleration", "SEAT-only acceleration"),
+    boatAcc: text("boatAcceleration", "BOAT-only acceleration"),
   }};
   return Array.from(document.querySelectorAll(".timeMetric:checked")).map(input => {{
     const key = input.value;
@@ -1036,20 +1170,20 @@ function selectedStrokeMetrics(analysis, stroke) {{
     boatVelocity: "#059669",
   }};
   const labels = {{
-    acc: "SEAT-BOAT acceleration",
-    seatAcc: "SEAT-only acceleration",
-    boatAcc: "BOAT-only acceleration",
-    velocity: "SEAT-BOAT velocity proxy",
-    seatVelocity: "SEAT velocity proxy",
-    boatVelocity: "BOAT velocity proxy",
+    acc: text("relativeAcceleration", "SEAT-only acceleration"),
+    seatAcc: text("seatAcceleration", "SEAT-only acceleration"),
+    boatAcc: text("boatAcceleration", "BOAT-only acceleration"),
+    velocity: text("relativeVelocityProxy", "SEAT movement speed proxy"),
+    seatVelocity: text("seatVelocityProxy", "SEAT velocity proxy"),
+    boatVelocity: text("boatVelocityProxy", "BOAT velocity proxy"),
   }};
   const averageLabels = {{
-    acc: "avg SEAT-BOAT acceleration",
-    seatAcc: "avg SEAT-only acceleration",
-    boatAcc: "avg BOAT-only acceleration",
-    velocity: "avg SEAT-BOAT velocity proxy",
-    seatVelocity: "avg SEAT velocity proxy",
-    boatVelocity: "avg BOAT velocity proxy",
+    acc: currentLanguage === "pl" ? "średnie przyspieszenie SEAT" : "avg SEAT-only acceleration",
+    seatAcc: currentLanguage === "pl" ? "średnie przyspieszenie SEAT" : "avg SEAT-only acceleration",
+    boatAcc: currentLanguage === "pl" ? "średnie przyspieszenie BOAT" : "avg BOAT-only acceleration",
+    velocity: currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "avg SEAT movement speed proxy",
+    seatVelocity: currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "avg SEAT velocity proxy",
+    boatVelocity: currentLanguage === "pl" ? "średnie proxy prędkości BOAT" : "avg BOAT velocity proxy",
   }};
   const series = [];
   for (const key of choices) {{
@@ -1063,41 +1197,60 @@ function selectedStrokeMetrics(analysis, stroke) {{
 function selectedOverlayMetricInfo() {{
   const key = document.getElementById("overlayMetric").value;
   const labels = {{
-    acc: "SEAT-BOAT acceleration",
-    seatAcc: "SEAT-only acceleration",
-    boatAcc: "BOAT-only acceleration",
-    velocity: "SEAT-BOAT velocity proxy",
-    seatVelocity: "SEAT velocity proxy",
-    boatVelocity: "BOAT velocity proxy",
+    acc: text("relativeAcceleration", "SEAT-only acceleration"),
+    seatAcc: text("seatAcceleration", "SEAT-only acceleration"),
+    boatAcc: text("boatAcceleration", "BOAT-only acceleration"),
+    velocity: text("relativeVelocityProxy", "SEAT movement speed proxy"),
+    seatVelocity: text("seatVelocityProxy", "SEAT velocity proxy"),
+    boatVelocity: text("boatVelocityProxy", "BOAT velocity proxy"),
   }};
   return {{ key, label: labels[key] || key }};
 }}
-function updateStrokeOverlayControls(analysis) {{
+function overlayItems() {{
+  const items = [];
+  segments.forEach((segment, segmentIndex) => {{
+    if (!segment.enabled || !segment.analysis) return;
+    segment.analysis.strokeDetails.forEach((stroke, strokeIndex) => {{
+      items.push({{
+        id: `${{segmentIndex}}:${{strokeIndex}}`,
+        segmentIndex,
+        strokeIndex,
+        athlete: segment.name || `${{text("athlete", "Athlete")}} ${{segmentIndex + 1}}`,
+        stroke,
+      }});
+    }});
+  }});
+  return items;
+}}
+function updateStrokeOverlayControls() {{
   const container = document.getElementById("strokeOverlayControls");
-  const available = analysis.strokeDetails.length;
+  const items = overlayItems();
+  const ids = new Set(items.map(item => item.id));
   selectedOverlayStrokes = new Set(
-    Array.from(selectedOverlayStrokes).filter(index => index < available)
+    Array.from(selectedOverlayStrokes).filter(id => ids.has(id))
   );
   if (!selectedOverlayStrokes.size) {{
-    selectedOverlayStrokes = new Set(Array.from({{ length: Math.min(3, available) }}, (_, index) => index));
+    selectedOverlayStrokes = new Set(items.slice(0, Math.min(4, items.length)).map(item => item.id));
   }}
-  container.innerHTML = analysis.strokeDetails.map((stroke, index) =>
-    `<label><input class="overlayStroke" value="${{index}}" type="checkbox" ${{selectedOverlayStrokes.has(index) ? "checked" : ""}}> Stroke ${{index + 1}}</label>`
+  container.innerHTML = items.map(item =>
+    `<label><input class="overlayStroke" value="${{item.id}}" type="checkbox" ${{selectedOverlayStrokes.has(item.id) ? "checked" : ""}}> ${{text("strokes", "Stroke")}} ${{item.strokeIndex + 1}} - ${{htmlEscapeText(item.athlete)}}</label>`
   ).join("");
   document.querySelectorAll(".overlayStroke").forEach(input => {{
     input.addEventListener("change", event => {{
-      const index = Number(event.target.value);
-      if (event.target.checked) selectedOverlayStrokes.add(index);
-      else selectedOverlayStrokes.delete(index);
-      renderStrokeOverlay(analysis);
+      const id = event.target.value;
+      if (event.target.checked) selectedOverlayStrokes.add(id);
+      else selectedOverlayStrokes.delete(id);
+      renderStrokeOverlay();
     }});
   }});
 }}
-function renderStrokeOverlay(analysis) {{
+function renderStrokeOverlay() {{
   const metric = selectedOverlayMetricInfo();
+  const items = overlayItems();
+  const order = new Map(items.map((item, index) => [item.id, index]));
   const selected = Array.from(selectedOverlayStrokes)
-    .sort((a, b) => a - b)
-    .map(index => analysis.strokeDetails[index] ? {{ index, stroke: analysis.strokeDetails[index] }} : null)
+    .sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0))
+    .map(id => items.find(item => item.id === id))
     .filter(Boolean);
   const maxLength = Math.max(0, ...selected.map(item => item.stroke.time.length));
   const xValues = Array.from({{ length: maxLength }}, (_, pointIndex) =>
@@ -1116,7 +1269,7 @@ function renderStrokeOverlay(analysis) {{
       const stroke = item.stroke;
       const rawKey = rawKeys[metric.key] || metric.key;
       return {{
-        label: `Stroke ${{item.index + 1}}`,
+        label: `${{text("strokes", "Stroke")}} ${{item.strokeIndex + 1}} - ${{item.athlete}}`,
         values: stroke[rawKey] || [],
         color: palette[seriesIndex % palette.length],
         width: 2,
@@ -1126,7 +1279,7 @@ function renderStrokeOverlay(analysis) {{
     document.getElementById("strokeOverlayCanvas"),
     xValues,
     series,
-    `${{metric.label}} by stroke time (s)`,
+    `${{metric.label}} ${{text("byStrokeTime", "by stroke time (s)")}}`,
     {{ zoom: strokeOverlayZoomRange, phase: false }}
   );
 }}
@@ -1165,7 +1318,7 @@ function drawCanvas(canvas, xValues, series, xLabel, options = {{}}) {{
   if (!xValues.length || !ys.length) {{
     ctx.fillStyle = "#667064";
     ctx.font = "14px system-ui";
-    ctx.fillText("No data in this graph/zoom window", 56, 60);
+    ctx.fillText(text("noData", "No data in this graph/zoom window"), 56, 60);
     return;
   }}
   let minX = Math.min(...xValues), maxX = Math.max(...xValues);
@@ -1258,15 +1411,15 @@ function drawCanvas(canvas, xValues, series, xLabel, options = {{}}) {{
 }}
 function render() {{
   const fullEnd = IMU_DATA.times[IMU_DATA.times.length - 1] || 0;
-  if (!segments.length) segments.push({{ name: "Full recording", start: 0, end: fullEnd, color: palette[0], enabled: true }});
+  if (!segments.length) segments.push({{ name: text("fullRecording", "Full recording"), start: 0, end: fullEnd, color: palette[0], enabled: true }});
   const rows = [];
   const cards = [];
   const full = analyzeRange(0, fullEnd);
-  cards.push(["Axis", axisNames[document.getElementById("axisSelect").value], sourceModeLabel()]);
-  cards.push(["Detected strokes", full.strokes, "In the selected recording"]);
-  cards.push(["Stroke rate", `${{fmtJs(full.spm, 1)}} strokes/min`, "Average pace"]);
-  cards.push(["Rhythm consistency", `${{fmtJs(full.rhythmConsistency, 0)}} / 100`, "Higher means more regular stroke timing"]);
-  cards.push(["Smoothness", fmtJs(full.smoothness, 2), "Lower means less jerky seat movement"]);
+  cards.push([text("axis", "Axis"), axisNames[document.getElementById("axisSelect").value], sourceModeLabel()]);
+  cards.push([text("detectedStrokes", "Detected strokes"), full.strokes, text("inSelectedRecording", "In the selected recording")]);
+  cards.push([text("strokeRate", "Stroke rate"), `${{fmtJs(full.spm, 1)}} strokes/min`, text("averagePace", "Average pace")]);
+  cards.push([text("rhythmConsistency", "Rhythm consistency"), `${{fmtJs(full.rhythmConsistency, 0)}} / 100`, text("higherRegularTiming", "Higher means more regular stroke timing")]);
+  cards.push([text("smoothness", "Smoothness"), fmtJs(full.smoothness, 2), text("lowerLessJerky", "Lower means less jerky seat movement")]);
   document.getElementById("interactiveMetrics").innerHTML = cards.map(card =>
     `<div class="metric"><span>${{card[0]}}</span><strong>${{card[1]}}</strong><small>${{card[2]}}</small></div>`
   ).join("");
@@ -1282,8 +1435,8 @@ function render() {{
       <td>${{fmtJs(analysis.rhythmConsistency, 0)}} / 100</td>
       <td>${{fmtJs(analysis.speedPeakPhase, 1)}}%</td>
       <td>${{fmtJs(analysis.smoothness, 3)}}</td>
-      <td><textarea data-action="comment" data-index="${{index}}" rows="2" placeholder="Short note for athlete">${{htmlEscapeText(segment.comment || "")}}</textarea></td>
-      <td><button type="button" data-action="download" data-index="${{index}}">HTML</button> <button type="button" data-action="remove" data-index="${{index}}">Remove</button></td>
+      <td><textarea data-action="comment" data-index="${{index}}" rows="2" placeholder="${{htmlEscapeText(text("shortNoteForAthlete", "Short note for athlete"))}}">${{htmlEscapeText(segment.comment || "")}}</textarea></td>
+      <td><button type="button" data-action="download" data-index="${{index}}">HTML</button> <button type="button" data-action="remove" data-index="${{index}}">${{text("remove", "Remove")}}</button></td>
     </tr>`);
   }});
   document.querySelector("#segmentTable tbody").innerHTML = rows.join("");
@@ -1291,15 +1444,15 @@ function render() {{
   const firstAnalysis = firstEnabled ? firstEnabled.analysis : full;
   const events = document.getElementById("showStrokeEvents").checked
     ? [
-        ...firstAnalysis.strokeStartTimes.map((time, index) => ({{ time, label: `S${{index + 1}} start`, color: "#1d4ed8", offset: 0 }})),
-        ...firstAnalysis.strokeEndTimes.map((time, index) => ({{ time, label: `S${{index + 1}} end`, color: "#b91c1c", offset: 14 }})),
+        ...firstAnalysis.strokeStartTimes.map((time, index) => ({{ time, label: `S${{index + 1}} ${{text("start", "start")}}`, color: "#1d4ed8", offset: 0 }})),
+        ...firstAnalysis.strokeEndTimes.map((time, index) => ({{ time, label: `S${{index + 1}} ${{text("end", "end")}}`, color: "#b91c1c", offset: 14 }})),
       ]
     : [];
   drawCanvas(
     document.getElementById("timeCanvas"),
     firstAnalysis.localTimes,
     selectedTimeMetrics(firstAnalysis, firstEnabled.name),
-    "time in selected segment (s)",
+    text("timeInSelectedSegment", "time in selected segment (s)"),
     {{ events, zoom: zoomRange, phase: false }}
   );
   updateStrokeView(firstAnalysis);
@@ -1308,7 +1461,7 @@ function updateStrokeView(analysis) {{
   const select = document.getElementById("strokeSelect");
   const previous = select.value;
   select.innerHTML = analysis.strokeDetails.map((stroke, index) =>
-    `<option value="${{index}}">Stroke ${{index + 1}} (${{fmtJs(stroke.duration, 2)}} s)</option>`
+    `<option value="${{index}}">${{text("strokes", "Stroke")}} ${{index + 1}} (${{fmtJs(stroke.duration, 2)}} s)</option>`
   ).join("");
   if (previous && Number(previous) < analysis.strokeDetails.length) select.value = previous;
   selectedStrokeIndex = Math.min(Number(select.value || 0), Math.max(0, analysis.strokeDetails.length - 1));
@@ -1316,17 +1469,21 @@ function updateStrokeView(analysis) {{
   const metrics = document.getElementById("strokeMetrics");
   const canvas = document.getElementById("strokeCanvas");
   if (!stroke) {{
-    metrics.innerHTML = "<p class='note'>No complete stroke detected for this segment.</p>";
-    document.querySelector("#allStrokeTable tbody").innerHTML = "<tr><td colspan='8'>No complete strokes detected.</td></tr>";
-    drawCanvas(canvas, [], [], "stroke phase (%)");
-    drawCanvas(document.getElementById("strokeVelocityCanvas"), [], [], "stroke phase (%)");
+    metrics.innerHTML = `<p class='note'>${{text("noCompleteStroke", "No complete stroke detected for this segment.")}}</p>`;
+    document.querySelector("#allStrokeTable tbody").innerHTML = `<tr><td colspan='9'>${{text("noCompleteStroke", "No complete stroke detected for this segment.")}}</td></tr>`;
+    drawCanvas(canvas, [], [], text("strokePhase", "stroke phase (%)"));
+    drawCanvas(document.getElementById("strokeVelocityCanvas"), [], [], text("strokePhase", "stroke phase (%)"));
     document.getElementById("strokeOverlayControls").innerHTML = "";
-    drawCanvas(document.getElementById("strokeOverlayCanvas"), [], [], "stroke time (s)");
+    drawCanvas(document.getElementById("strokeOverlayCanvas"), [], [], text("strokeTimeAxis", "stroke time (s)"));
     return;
   }}
-  updateStrokeOverlayControls(analysis);
-  document.querySelector("#allStrokeTable tbody").innerHTML = analysis.strokeDetails.map((item, index) => `<tr>
-    <td>${{index + 1}}</td>
+  updateStrokeOverlayControls();
+  const tableItems = overlayItems();
+  document.querySelector("#allStrokeTable tbody").innerHTML = tableItems.map(itemInfo => {{
+    const item = itemInfo.stroke;
+    return `<tr>
+    <td>${{itemInfo.strokeIndex + 1}}</td>
+    <td>${{htmlEscapeText(itemInfo.athlete)}}</td>
     <td>${{fmtJs(item.start, 2)}}-${{fmtJs(item.end, 2)}}s</td>
     <td>${{fmtJs(item.duration, 2)}}s</td>
     <td>${{fmtJs(60 / item.duration, 1)}} SPM</td>
@@ -1334,26 +1491,27 @@ function updateStrokeView(analysis) {{
     <td>${{fmtJs(item.peakAcc, 3)}} m/s^2</td>
     <td>${{fmtJs(item.boatVelocityGain, 3)}}</td>
     <td>${{fmtJs(item.smoothness, 3)}}</td>
-  </tr>`).join("");
+  </tr>`;
+  }}).join("");
   metrics.innerHTML = [
-    ["Selected stroke", `${{selectedStrokeIndex + 1}}`, `${{fmtJs(stroke.start, 2)}}s to ${{fmtJs(stroke.end, 2)}}s`],
-    ["Stroke time", `${{fmtJs(stroke.duration, 2)}} s`, "Time from one drive-direction change to the next"],
-    ["Stroke rate", `${{fmtJs(60 / stroke.duration, 1)}} SPM`, "Pace for this stroke"],
-    ["Strongest seat drive speed", `${{fmtJs(stroke.peakPhase, 1)}}%`, "Where the seat moves fastest in this stroke"],
-    ["SEAT-BOAT peak acceleration", `${{fmtJs(stroke.peakAcc, 3)}} m/s^2`, "Strongest seat acceleration compared with the boat"],
-    ["BOAT velocity gain", fmtJs(stroke.boatVelocityGain, 3), "How much the BOAT velocity proxy rises after this stroke starts"],
-    ["Smoothness", fmtJs(stroke.smoothness, 3), "Lower means a smoother seat movement"],
+    [text("selectedStroke", "Selected stroke"), `${{selectedStrokeIndex + 1}}`, `${{fmtJs(stroke.start, 2)}}s to ${{fmtJs(stroke.end, 2)}}s`],
+    [text("strokeTime", "Stroke time"), `${{fmtJs(stroke.duration, 2)}} s`, text("timeDriveChange", "Time from one drive-direction change to the next")],
+    [text("strokeRate", "Stroke rate"), `${{fmtJs(60 / stroke.duration, 1)}} SPM`, text("paceForStroke", "Pace for this stroke")],
+    [text("strongestSeatDriveSpeed", "Strongest seat drive speed"), `${{fmtJs(stroke.peakPhase, 1)}}%`, text("whereSeatFastest", "Where the seat moves fastest in this stroke")],
+    [text("peakAcceleration", "SEAT-only peak acceleration"), `${{fmtJs(stroke.peakAcc, 3)}} m/s^2`, text("strongestSeatAcceleration", "Strongest seat acceleration in this stroke")],
+    [text("boatVelocityChange", "BOAT velocity change"), fmtJs(stroke.boatVelocityGain, 3), text("boatVelocityChangeNote", "Signed BOAT velocity proxy change from stroke start to stroke end")],
+    [text("smoothness", "Smoothness"), fmtJs(stroke.smoothness, 3), text("lowerSmoother", "Lower means a smoother seat movement")],
   ].map(card => `<div class="metric"><span>${{card[0]}}</span><strong>${{card[1]}}</strong><small>${{card[2]}}</small></div>`).join("");
   drawCanvas(
     canvas,
     stroke.phase,
     selectedStrokeMetrics(analysis, stroke),
-    "stroke phase (%)",
+    text("strokePhase", "stroke phase (%)"),
     {{
       zoom: strokeZoomRange,
       phase: true,
       events: [
-        {{ time: stroke.peakPhase, label: "strongest speed", color: "#6d28d9", offset: 0 }},
+        {{ time: stroke.peakPhase, label: text("strongestSpeed", "strongest speed"), color: "#6d28d9", offset: 0 }},
       ],
     }}
   );
@@ -1361,19 +1519,19 @@ function updateStrokeView(analysis) {{
     document.getElementById("strokeVelocityCanvas"),
     stroke.phase,
     [
-      {{ label: "selected stroke speed curve", values: stroke.velocity, color: "#6d28d9", width: 2.4 }},
-      {{ label: "avg speed curve", values: analysis.avg.velocity, color: "#6d28d9", width: 1.4, dashed: true }},
+      {{ label: text("selectedStrokeSpeedCurve", "selected stroke speed curve"), values: stroke.velocity, color: "#6d28d9", width: 2.4 }},
+      {{ label: text("avgSpeedCurve", "avg speed curve"), values: analysis.avg.velocity, color: "#6d28d9", width: 1.4, dashed: true }},
     ],
-    "stroke phase (%)",
+    text("strokePhase", "stroke phase (%)"),
     {{
       zoom: strokeVelocityZoomRange,
       phase: true,
       events: [
-        {{ time: stroke.peakPhase, label: "strongest speed", color: "#6d28d9", offset: 0 }},
+        {{ time: stroke.peakPhase, label: text("strongestSpeed", "strongest speed"), color: "#6d28d9", offset: 0 }},
       ],
     }}
   );
-  renderStrokeOverlay(analysis);
+  renderStrokeOverlay();
 }}
 function htmlEscapeText(value) {{
   return String(value).replace(/[&<>"']/g, char => ({{
@@ -1393,7 +1551,7 @@ function segmentReportHtml(segment) {{
     sourceStart: segment.start,
     sourceEnd: segment.end,
     time: analysis.localTimes,
-    acc: analysis.smoothed,
+    acc: analysis.seatAcc,
     seatAcc: analysis.seatAcc,
     boatAcc: analysis.boatAcc,
     velocity: analysis.velocity,
@@ -1445,65 +1603,65 @@ select, button {{ font: inherit; border: 1px solid #cbd5c0; border-radius: 6px; 
 #strokeOverlayControls {{ display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }}
 #strokeOverlayControls label {{ display: inline-flex; flex-direction: row; align-items: center; gap: 5px; min-width: 86px; padding: 5px 8px; border: 1px solid #dfe4d7; border-radius: 6px; background: #f8faf6; }}
 </style></head><body>
-<header><h1>${{htmlEscapeText(segment.name)}} dashboard</h1><p>This export contains only this athlete's segment, shown from 0s to ${{fmtJs(analysis.duration, 1)}}s · ${{htmlEscapeText(sourceModeLabel())}}</p></header>
+<header><h1>${{htmlEscapeText(segment.name)}} ${{text("coachDashboard", "dashboard")}}</h1><p>${{htmlEscapeText(currentLanguage === "pl" ? "Ten eksport zawiera tylko segment tego zawodnika, pokazany od 0 s do " : "This export contains only this athlete's segment, shown from 0s to ")}}${{fmtJs(analysis.duration, 1)}}s · ${{htmlEscapeText(sourceModeLabel())}}</p></header>
 <main>
-<h2>Athlete dashboard</h2>
-<p class="note">This exported file uses the same dashboard views as the coach report, but all time values are local to this athlete's selected segment.</p>
+<h2>${{text("athleteDashboard", "Athlete dashboard")}}</h2>
+<p class="note">${{htmlEscapeText(currentLanguage === "pl" ? "Ten plik używa tych samych widoków panelu co raport trenera, ale wszystkie wartości czasu odnoszą się do wybranego segmentu zawodnika." : "This exported file uses the same dashboard views as the coach report, but all time values are local to this athlete's selected segment.")}}</p>
 <div id="metrics" class="grid"></div>
-<h2>Coach comment</h2>
-<textarea id="coachComment" placeholder="Write a short note for the athlete..."></textarea>
-<h2>Time graph</h2>
+<h2>${{text("coachMessageBeforeExport", "Coach comment")}}</h2>
+<textarea id="coachComment" placeholder="${{htmlEscapeText(text("shortNoteForAthlete", "Write a short note for the athlete..."))}}"></textarea>
+<h2>${{text("timeGraph", "Time graph")}}</h2>
 <div class="controls">
-  <label><input class="timeMetric" value="relativeAcc" type="checkbox"> SEAT-BOAT acceleration</label>
-  <label><input class="timeMetric" value="seatAcc" type="checkbox" checked> SEAT-only acceleration</label>
-  <label><input class="timeMetric" value="boatAcc" type="checkbox" checked> BOAT-only acceleration</label>
-  <label><input id="normalizeTimeGraph" type="checkbox" checked> normalize graph lines</label>
-  <label><input id="showStrokeEvents" type="checkbox" checked> stroke start/end lines</label>
-  <label>Time label detail
+  <label><input class="timeMetric" value="relativeAcc" type="checkbox"> ${{text("relativeAcceleration", "SEAT-only acceleration")}}</label>
+  <label><input class="timeMetric" value="seatAcc" type="checkbox" checked> ${{text("seatAcceleration", "SEAT-only acceleration")}}</label>
+  <label><input class="timeMetric" value="boatAcc" type="checkbox" checked> ${{text("boatAcceleration", "BOAT-only acceleration")}}</label>
+  <label><input id="normalizeTimeGraph" type="checkbox" checked> ${{text("normalizeGraphLines", "normalize graph lines")}}</label>
+  <label><input id="showStrokeEvents" type="checkbox" checked> ${{text("strokeStartEndLines", "stroke start/end lines")}}</label>
+  <label>${{text("timeLabelDetail", "Time label detail")}}
     <select id="timePrecision">
       <option value="1">simple</option>
       <option value="2">more exact</option>
       <option value="0">rough</option>
     </select>
   </label>
-  <label>Zoom start s <input id="zoomStart" type="number" step="0.1"></label>
-  <label>Zoom end s <input id="zoomEnd" type="number" step="0.1"></label>
-  <button id="applyZoom" type="button">Apply zoom</button>
-  <button id="resetZoom" type="button">Reset zoom</button>
+  <label>${{text("zoomStart", "Zoom start s")}} <input id="zoomStart" type="number" step="0.1"></label>
+  <label>${{text("zoomEnd", "Zoom end s")}} <input id="zoomEnd" type="number" step="0.1"></label>
+  <button id="applyZoom" type="button">${{text("applyZoom", "Apply zoom")}}</button>
+  <button id="resetZoom" type="button">${{text("resetZoom", "Reset zoom")}}</button>
 </div>
 <canvas id="time" width="1100" height="520"></canvas>
-<h2>Selected stroke</h2>
+<h2>${{text("selectedStroke", "Selected stroke")}}</h2>
 <div class="controls">
-  <label>Stroke <select id="strokeSelect"></select></label>
-  <label><input class="strokeMetric" value="acc" type="checkbox" checked> SEAT-BOAT acceleration</label>
-  <label><input class="strokeMetric" value="seatAcc" type="checkbox"> SEAT-only acceleration</label>
-  <label><input class="strokeMetric" value="boatAcc" type="checkbox"> BOAT-only acceleration</label>
-  <label><input class="strokeMetric" value="velocity" type="checkbox"> SEAT-BOAT velocity proxy</label>
-  <label><input class="strokeMetric" value="seatVelocity" type="checkbox"> SEAT velocity proxy</label>
-  <label><input class="strokeMetric" value="boatVelocity" type="checkbox"> BOAT velocity proxy</label>
-  <label><input id="showAverageStroke" type="checkbox" checked> show average</label>
+  <label>${{text("strokes", "Stroke")}} <select id="strokeSelect"></select></label>
+  <label><input class="strokeMetric" value="acc" type="checkbox" checked> ${{text("relativeAcceleration", "SEAT-only acceleration")}}</label>
+  <label><input class="strokeMetric" value="seatAcc" type="checkbox"> ${{text("seatAcceleration", "SEAT-only acceleration")}}</label>
+  <label><input class="strokeMetric" value="boatAcc" type="checkbox"> ${{text("boatAcceleration", "BOAT-only acceleration")}}</label>
+  <label><input class="strokeMetric" value="velocity" type="checkbox"> ${{text("relativeVelocityProxy", "SEAT movement speed proxy")}}</label>
+  <label><input class="strokeMetric" value="seatVelocity" type="checkbox"> ${{text("seatVelocityProxy", "SEAT velocity proxy")}}</label>
+  <label><input class="strokeMetric" value="boatVelocity" type="checkbox"> ${{text("boatVelocityProxy", "BOAT velocity proxy")}}</label>
+  <label><input id="showAverageStroke" type="checkbox" checked> ${{text("showSegmentAverage", "show average")}}</label>
 </div>
 <div id="strokeMetrics" class="grid"></div>
 <canvas id="stroke" width="1100" height="360"></canvas>
 <canvas id="strokeVelocity" width="1100" height="300"></canvas>
-<h2>Stroke overlay</h2>
+<h2>${{text("strokeOverlay", "Stroke overlay")}}</h2>
 <div class="controls">
-  <label>Overlay metric
+  <label>${{text("overlayMetric", "Overlay metric")}}
     <select id="overlayMetric">
-      <option value="velocity">SEAT-BOAT velocity proxy</option>
-      <option value="boatVelocity">BOAT velocity proxy</option>
-      <option value="seatVelocity">SEAT velocity proxy</option>
-      <option value="acc">SEAT-BOAT acceleration</option>
-      <option value="seatAcc">SEAT-only acceleration</option>
-      <option value="boatAcc">BOAT-only acceleration</option>
+      <option value="velocity">${{text("relativeVelocityProxy", "SEAT movement speed proxy")}}</option>
+      <option value="boatVelocity">${{text("boatVelocityProxy", "BOAT velocity proxy")}}</option>
+      <option value="seatVelocity">${{text("seatVelocityProxy", "SEAT velocity proxy")}}</option>
+      <option value="acc">${{text("relativeAcceleration", "SEAT-only acceleration")}}</option>
+      <option value="seatAcc">${{text("seatAcceleration", "SEAT-only acceleration")}}</option>
+      <option value="boatAcc">${{text("boatAcceleration", "BOAT-only acceleration")}}</option>
     </select>
   </label>
   <span id="strokeOverlayControls"></span>
 </div>
 <canvas id="strokeOverlay" width="1100" height="400"></canvas>
-  <p class="note">Selected strokes start at 0s and keep their real duration, so timing differences stay visible.</p>
-<h2>Stroke-by-stroke values</h2>
-<table id="strokeTable"><thead><tr><th>#</th><th>Time</th><th>Stroke time</th><th>Stroke rate</th><th>Strongest seat drive speed</th><th>SEAT-BOAT peak acceleration</th><th>BOAT velocity gain</th><th>Smoothness</th></tr></thead><tbody></tbody></table>
+<p class="note">${{text("strokeOverlayNote", "Selected strokes start at 0s and keep their real duration, so timing differences stay visible.")}}</p>
+<h2>${{text("strokeByStrokeValues", "Stroke-by-stroke values")}}</h2>
+<table id="strokeTable"><thead><tr><th>#</th><th>${{text("time", "Time")}}</th><th>${{text("strokeTime", "Stroke time")}}</th><th>${{text("strokeRate", "Stroke rate")}}</th><th>${{text("strongestSeatDriveSpeed", "Strongest seat drive speed")}}</th><th>${{text("peakAcceleration", "SEAT-only peak acceleration")}}</th><th>${{text("boatVelocityChange", "BOAT velocity change")}}</th><th>${{text("smoothness", "Smoothness")}}</th></tr></thead><tbody></tbody></table>
 </main>
 <script>
 const DATA = ${{data}};
@@ -1552,12 +1710,12 @@ function draw(canvas, x, series, events, zoom, phase) {{
 }}
 function renderMetrics() {{
  const cards = [
-  ["Strokes", DATA.metrics.strokes, "In this athlete segment"],
-  ["Stroke rate", fmt(DATA.metrics.spm, 1) + " strokes/min", "Average pace"],
-  ["Rhythm consistency", fmt(DATA.metrics.rhythmConsistency, 0) + " / 100", "Higher means more regular timing"],
-  ["Strongest seat drive speed", fmt(DATA.metrics.strongestSeatDriveSpeed, 1) + "%", "Where the seat is fastest"],
-  ["SEAT-BOAT peak acceleration", fmt(DATA.metrics.peakAcc, 3) + " m/s^2", "Strongest seat acceleration compared with the boat"],
-  ["Smoothness", fmt(DATA.metrics.smoothness, 3), "Lower means smoother seat movement"],
+  ["${{text("strokes", "Strokes")}}", DATA.metrics.strokes, "${{text("inSelectedRecording", "In this athlete segment")}}"],
+  ["${{text("strokeRate", "Stroke rate")}}", fmt(DATA.metrics.spm, 1) + " strokes/min", "${{text("averagePace", "Average pace")}}"],
+  ["${{text("rhythmConsistency", "Rhythm consistency")}}", fmt(DATA.metrics.rhythmConsistency, 0) + " / 100", "${{text("higherRegularTiming", "Higher means more regular timing")}}"],
+  ["${{text("strongestSeatDriveSpeed", "Strongest seat drive speed")}}", fmt(DATA.metrics.strongestSeatDriveSpeed, 1) + "%", "${{text("whereSeatFastest", "Where the seat is fastest")}}"],
+  ["${{text("peakAcceleration", "SEAT-only peak acceleration")}}", fmt(DATA.metrics.peakAcc, 3) + " m/s^2", "${{text("strongestSeatAcceleration", "Strongest seat acceleration in this stroke")}}"],
+  ["${{text("smoothness", "Smoothness")}}", fmt(DATA.metrics.smoothness, 3), "${{text("lowerSmoother", "Lower means smoother seat movement")}}"],
  ];
  document.getElementById('metrics').innerHTML = cards.map(card => '<div class="metric"><span>' + esc(card[0]) + '</span><strong>' + esc(card[1]) + '</strong><small>' + esc(card[2]) + '</small></div>').join('');
 }}
@@ -1571,9 +1729,9 @@ function normalize(values) {{
 function selectedTimeSeries() {{
  const normalizeLines = document.getElementById('normalizeTimeGraph').checked;
  const map = {{
- relativeAcc: {{n:'SEAT-BOAT acceleration', v:DATA.acc, c:'#1d4ed8'}},
-  seatAcc: {{n:'SEAT-only acceleration', v:DATA.seatAcc, c:'#7c2d12'}},
-  boatAcc: {{n:'BOAT-only acceleration', v:DATA.boatAcc, c:'#0f766e'}},
+ relativeAcc: {{n:'SEAT-only acceleration', v:DATA.acc, c:'#1d4ed8'}},
+  seatAcc: {{n:'${{text("seatAcceleration", "SEAT-only acceleration")}}', v:DATA.seatAcc, c:'#7c2d12'}},
+  boatAcc: {{n:'${{text("boatAcceleration", "BOAT-only acceleration")}}', v:DATA.boatAcc, c:'#0f766e'}},
  }};
  return Array.from(document.querySelectorAll('.timeMetric:checked')).map(input => {{
   const item = map[input.value];
@@ -1584,12 +1742,12 @@ function selectedTimeSeries() {{
 function selectedStrokeSeries(stroke) {{
  const showAverage = document.getElementById('showAverageStroke').checked;
  const map = {{
-  acc: {{n:'selected SEAT-BOAT acceleration', avg:'average SEAT-BOAT acceleration', v:stroke.acc, av:DATA.avgAcc, c:'#1d4ed8'}},
-  seatAcc: {{n:'selected SEAT-only acceleration', avg:'average SEAT-only acceleration', v:stroke.seatAcc, av:DATA.avgSeatAcc, c:'#7c2d12'}},
-  boatAcc: {{n:'selected BOAT-only acceleration', avg:'average BOAT-only acceleration', v:stroke.boatAcc, av:DATA.avgBoatAcc, c:'#0f766e'}},
-  velocity: {{n:'selected SEAT-BOAT velocity proxy', avg:'average SEAT-BOAT velocity proxy', v:stroke.velocity, av:DATA.avgVelocity, c:'#6d28d9'}},
-  seatVelocity: {{n:'selected SEAT velocity proxy', avg:'average SEAT velocity proxy', v:stroke.seatVelocity, av:DATA.avgSeatVelocity, c:'#c2410c'}},
-  boatVelocity: {{n:'selected BOAT velocity proxy', avg:'average BOAT velocity proxy', v:stroke.boatVelocity, av:DATA.avgBoatVelocity, c:'#059669'}},
+  acc: {{n:'${{text("relativeAcceleration", "selected SEAT-only acceleration")}}', avg:'${{currentLanguage === "pl" ? "średnie przyspieszenie SEAT" : "average SEAT-only acceleration"}}', v:stroke.acc, av:DATA.avgAcc, c:'#1d4ed8'}},
+  seatAcc: {{n:'${{text("seatAcceleration", "selected SEAT-only acceleration")}}', avg:'${{currentLanguage === "pl" ? "średnie przyspieszenie SEAT" : "average SEAT-only acceleration"}}', v:stroke.seatAcc, av:DATA.avgSeatAcc, c:'#7c2d12'}},
+  boatAcc: {{n:'${{text("boatAcceleration", "selected BOAT-only acceleration")}}', avg:'${{currentLanguage === "pl" ? "średnie przyspieszenie BOAT" : "average BOAT-only acceleration"}}', v:stroke.boatAcc, av:DATA.avgBoatAcc, c:'#0f766e'}},
+  velocity: {{n:'${{text("relativeVelocityProxy", "selected SEAT movement speed proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "average SEAT movement speed proxy"}}', v:stroke.velocity, av:DATA.avgVelocity, c:'#6d28d9'}},
+  seatVelocity: {{n:'${{text("seatVelocityProxy", "selected SEAT velocity proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "average SEAT velocity proxy"}}', v:stroke.seatVelocity, av:DATA.avgSeatVelocity, c:'#c2410c'}},
+  boatVelocity: {{n:'${{text("boatVelocityProxy", "selected BOAT velocity proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości BOAT" : "average BOAT velocity proxy"}}', v:stroke.boatVelocity, av:DATA.avgBoatVelocity, c:'#059669'}},
  }};
  const series = [];
  for (const input of Array.from(document.querySelectorAll('.strokeMetric:checked'))) {{
@@ -1602,10 +1760,10 @@ function selectedStrokeSeries(stroke) {{
 function selectedOverlayMetricInfo() {{
  const key = document.getElementById('overlayMetric').value;
  const labels = {{
-  acc:'SEAT-BOAT acceleration',
+  acc:'SEAT-only acceleration',
   seatAcc:'SEAT-only acceleration',
   boatAcc:'BOAT-only acceleration',
-  velocity:'SEAT-BOAT velocity proxy',
+  velocity:'SEAT movement speed proxy',
   seatVelocity:'SEAT velocity proxy',
   boatVelocity:'BOAT velocity proxy',
  }};
@@ -1652,17 +1810,17 @@ function renderStroke() {{
  const stroke = DATA.strokes[Number(select.value || 0)];
  if (!stroke) return;
  document.getElementById('strokeMetrics').innerHTML = [
-  ["Stroke time", fmt(stroke.duration,2) + " s", "Time from one drive-direction change to the next"],
-  ["Stroke rate", fmt(60/stroke.duration,1) + " SPM", "Pace for this stroke"],
-  ["Strongest seat drive speed", fmt(stroke.peakPhase,1) + "%", "Where the seat moves fastest"],
-  ["SEAT-BOAT peak acceleration", fmt(stroke.peakAcc,3) + " m/s^2", "Strongest seat acceleration compared with the boat"],
-  ["BOAT velocity gain", fmt(stroke.boatVelocityGain,3), "How much the BOAT velocity proxy rises after this stroke starts"],
-  ["Smoothness", fmt(stroke.smoothness,3), "Lower means smoother seat movement"],
+  ["${{text("strokeTime", "Stroke time")}}", fmt(stroke.duration,2) + " s", "${{text("timeDriveChange", "Time from one drive-direction change to the next")}}"],
+  ["${{text("strokeRate", "Stroke rate")}}", fmt(60/stroke.duration,1) + " SPM", "${{text("paceForStroke", "Pace for this stroke")}}"],
+  ["${{text("strongestSeatDriveSpeed", "Strongest seat drive speed")}}", fmt(stroke.peakPhase,1) + "%", "${{text("whereSeatFastest", "Where the seat moves fastest")}}"],
+  ["${{text("peakAcceleration", "SEAT-only peak acceleration")}}", fmt(stroke.peakAcc,3) + " m/s^2", "${{text("strongestSeatAcceleration", "Strongest seat acceleration in this stroke")}}"],
+  ["${{text("boatVelocityChange", "BOAT velocity change")}}", fmt(stroke.boatVelocityGain,3), "${{text("boatVelocityChangeNote", "Signed BOAT velocity proxy change from stroke start to stroke end")}}"],
+  ["${{text("smoothness", "Smoothness")}}", fmt(stroke.smoothness,3), "${{text("lowerSmoother", "Lower means smoother seat movement")}}"],
  ].map(card => '<div class="metric"><span>' + esc(card[0]) + '</span><strong>' + esc(card[1]) + '</strong><small>' + esc(card[2]) + '</small></div>').join('');
  draw(document.getElementById('stroke'), stroke.phase, selectedStrokeSeries(stroke), [{{time:stroke.peakPhase,color:'#6d28d9',label:'strongest speed'}}], strokeZoomRange, true);
  draw(document.getElementById('strokeVelocity'), stroke.phase, [
-  {{n:'selected SEAT-BOAT velocity proxy', v:stroke.velocity, c:'#6d28d9'}},
-  {{n:'average SEAT-BOAT velocity proxy', v:DATA.avgVelocity, c:'#7c2d12'}},
+  {{n:'${{text("relativeVelocityProxy", "selected SEAT movement speed proxy")}}', v:stroke.velocity, c:'#6d28d9'}},
+  {{n:'${{currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "average SEAT movement speed proxy"}}', v:DATA.avgVelocity, c:'#7c2d12'}},
  ], [{{time:stroke.peakPhase,color:'#6d28d9',label:'strongest speed'}}], strokeVelocityZoomRange, true);
  renderOverlay();
 }}
@@ -1839,11 +1997,17 @@ document.querySelector("#segmentTable tbody").addEventListener("click", event =>
   if (target.dataset.action === "remove") {{ segments.splice(Number(target.dataset.index), 1); render(); }}
   if (target.dataset.action === "download") downloadSegment(Number(target.dataset.index));
 }});
+document.getElementById("languageSelect").addEventListener("input", event => {{
+  currentLanguage = event.target.value;
+  applyLanguage();
+  render();
+}});
 ["axisSelect", "invertAxis", "invertSeatOnly", "swapSeatBoat", "minPeakMs", "smoothWindow", "showStrokeEvents", "normalizeTimeGraph", "timePrecision", "strokeSelect", "showAverageStroke", "phaseTickStep", "overlayMetric"].forEach(id => {{
   document.getElementById(id).addEventListener("input", render);
 }});
 document.querySelectorAll(".timeMetric").forEach(input => input.addEventListener("change", render));
 document.querySelectorAll(".strokeMetric").forEach(input => input.addEventListener("change", render));
+initLanguage();
 render();
 </script>
 """
@@ -1879,7 +2043,7 @@ def make_report_html(
         metric_card("Stroke rate", f"{fmt(analysis['stroke_rate_spm'], 1)} strokes/min", "Average pace"),
         metric_card("Rhythm consistency", f"{fmt(analysis['rhythm_consistency_score'], 0)} / 100", "Higher means more regular timing"),
         metric_card("Strongest seat drive speed", f"{fmt(analysis['speed_peak_phase_pct'], 1)}%", "Where the seat is fastest in the stroke"),
-        metric_card("SEAT-BOAT peak acceleration", f"{fmt(analysis['peak_force_proxy'], 3)} m/s^2", "Strongest seat acceleration compared with the boat"),
+        metric_card("SEAT-only peak acceleration", f"{fmt(analysis['peak_force_proxy'], 3)} m/s^2", "Strongest seat acceleration in the selected recording"),
         metric_card("Smoothness", f"{fmt(analysis['smoothness_jerk_rms'], 3)}", "Lower means smoother seat movement"),
     ]
     advanced_cards: list[str] = [
@@ -1984,6 +2148,12 @@ def make_report_html(
             "<div class='grid'>",
             *cards,
             "</div>",
+            "<section id='joanna-method-note'>",
+            "<h2>Method update for Joanna</h2>",
+            "<p>I finally understood the point from the beginning: the stroke window should describe the stroke itself, not just the distance between two acceleration peaks. The offline analysis now uses the seat movement speed proxy to detect where a stroke starts and ends. Earlier versions relied more directly on smoothed acceleration peaks, which could make the window too dependent on a strong drive peak or on small bumps in the acceleration signal.</p>",
+            "<p>The current approach is therefore based on the change into positive seat movement speed. A stroke is categorized from one detected positive drive-start movement to the next detected positive drive-start movement. This is intended to represent the rowing stroke as a time window more naturally than a peak-to-peak acceleration definition.</p>",
+            "<p>This change should make the segmentation easier to explain and hopefully more accurate: the dashboard now uses velocity-based drive-start timing for categorization, while acceleration remains useful for describing the intensity and smoothness inside the detected stroke.</p>",
+            "</section>",
             make_interactive_dashboard(dual, tuning),
             "<h2>IMU rotation stability</h2>",
             make_svg("Rotation rate magnitude", rotation_series, "rad/s"),
