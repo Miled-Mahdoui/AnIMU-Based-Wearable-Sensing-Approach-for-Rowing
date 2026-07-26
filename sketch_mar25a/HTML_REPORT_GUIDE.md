@@ -2,6 +2,34 @@
 
 This project can generate a self-contained HTML report from recorded IMU CSV files. The report can be opened directly in a browser and shared without Python or the original CSV files.
 
+## Quick start for Joanna
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Miled-Mahdoui/AnIMU-Based-Wearable-Sensing-Approach-for-Rowing.git
+```
+
+Go into the project folder:
+
+```bash
+cd AnIMU-Based-Wearable-Sensing-Approach-for-Rowing
+```
+
+Create the offline HTML report from a folder containing the SEAT and BOAT CSV files:
+
+```bash
+/usr/local/bin/python3 sketch_mar25a/analyze_log.py /path/to/folder_with_csv_files --output rowing_report.html --label rowing_report --min-peak-ms 800 --smooth-window 10
+```
+
+Then open:
+
+```text
+rowing_report.html
+```
+
+Short update: the offline report now uses velocity-based drive-start detection instead of the older acceleration-peak based approach. This means strokes are detected from one drive-start movement to the next drive-start movement, which should be more intuitive for coach-facing rowing analysis.
+
 ## 1. Prepare the files
 
 Copy the SEAT and BOAT CSV files into one folder.
@@ -9,9 +37,9 @@ Copy the SEAT and BOAT CSV files into one folder.
 Example folder:
 
 ```text
-/Users/mahdoui/Desktop/rowing_Miled1/
-  LOG001.CSV   # SEAT
-  LOG000.CSV   # BOAT
+/path/to/folder_with_csv_files/
+  SEAT_LOG.CSV
+  BOAT_LOG.CSV
 ```
 
 The script can auto-detect SEAT and BOAT from the CSV content if the first column contains the device name.
@@ -47,10 +75,10 @@ Athlete 3: 02:55 to 04:05
 From the repository folder, run:
 
 ```bash
-/usr/local/bin/python3 /Users/mahdoui/Desktop/Arduino/AnIMU-Based-Wearable-Sensing-Approach-for-Rowing/sketch_mar25a/analyze_log.py \
-  /Users/mahdoui/Desktop/rowing_Miled1 \
-  --output /Users/mahdoui/Desktop/rowing_Miled1_report.html \
-  --label rowing_Miled1 \
+/usr/local/bin/python3 sketch_mar25a/analyze_log.py \
+  /path/to/folder_with_csv_files \
+  --output rowing_report.html \
+  --label rowing_report \
   --min-peak-ms 800 \
   --smooth-window 10
 ```
@@ -58,7 +86,7 @@ From the repository folder, run:
 Open the generated file:
 
 ```text
-/Users/mahdoui/Desktop/rowing_Miled1_report.html
+rowing_report.html
 ```
 
 ## 4. Generate the report from explicit files
@@ -66,7 +94,7 @@ Open the generated file:
 If auto-detection is not desired, pass the SEAT file first and the BOAT file second:
 
 ```bash
-/usr/local/bin/python3 /Users/mahdoui/Desktop/Arduino/AnIMU-Based-Wearable-Sensing-Approach-for-Rowing/sketch_mar25a/analyze_log.py \
+/usr/local/bin/python3 sketch_mar25a/analyze_log.py \
   /path/to/SEAT.CSV \
   /path/to/BOAT.CSV \
   --output /path/to/report.html \
@@ -107,17 +135,3 @@ In practical terms:
 - Older logic: a stroke could be treated more like acceleration peak to acceleration peak.
 - Current logic: a stroke is treated more like drive start to next drive start.
 - The current method uses the change into positive seat movement velocity, which should be more intuitive for rowing coaches because it follows when the seat starts moving through the drive instead of only asking where the largest acceleration spike occurred.
-
-## 7. Useful command for Joanna
-
-After downloading or cloning the repository, the most direct command is:
-
-```bash
-/usr/local/bin/python3 sketch_mar25a/analyze_log.py /path/to/folder_with_csv_files --output rowing_report.html --label rowing_report --min-peak-ms 800 --smooth-window 10
-```
-
-Then open:
-
-```text
-rowing_report.html
-```
