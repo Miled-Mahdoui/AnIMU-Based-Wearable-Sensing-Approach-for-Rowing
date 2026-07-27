@@ -242,6 +242,13 @@ def positive_peak_value(values: list[float]) -> float:
     return max(0.0, max(values))
 
 
+def strongest_drive_acceleration(acceleration: list[float], velocity: list[float]) -> float:
+    drive_values = [abs(acc) for acc, vel in zip(acceleration, velocity) if vel > 0.0]
+    if drive_values:
+        return max(drive_values)
+    return max((abs(acc) for acc in acceleration), default=0.0)
+
+
 def local_speed_curve(velocity: list[float], tuning: Tuning) -> list[float]:
     if not velocity:
         return []
@@ -421,7 +428,7 @@ def analyze_signal(times: list[float], forward: list[float], tuning: Tuning) -> 
                 "end_s": times[end],
                 "duration_s": times[end] - times[start],
                 "spm": 60.0 / (times[end] - times[start]) if times[end] > times[start] else 0.0,
-                "peak_acc": max(acc_segment) if acc_segment else 0.0,
+                "peak_acc": strongest_drive_acceleration(acc_segment, vel_segment),
                 "speed_proxy": positive_peak_value(vel_segment),
                 "speed_peak_phase_pct": (local_times[local_peak] / max(0.001, local_times[-1]) * 100.0) if local_times else 0.0,
                 "peak_power_proxy": max(power_segment) if power_segment else 0.0,
@@ -455,7 +462,7 @@ def analyze_signal(times: list[float], forward: list[float], tuning: Tuning) -> 
         "speed_proxy": positive_peak_value(drive_velocity),
         "speed_peak_time_s": times[speed_peak_index] if drive_velocity else 0.0,
         "speed_peak_phase_pct": avg_speed_peak_phase,
-        "peak_force_proxy": max(smoothed_forward) if smoothed_forward else 0.0,
+        "peak_force_proxy": strongest_drive_acceleration(smoothed_forward, drive_velocity),
         "peak_power_proxy": max(power) if power else 0.0,
         "smoothness_jerk_rms": jerk_rms(times, smoothed_forward),
         "phase": list(range(101)),
@@ -710,7 +717,7 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
   <p class="note" data-i18n="strokeOverlayNote">Stroke overlay: selected strokes start at 0s and keep their real duration, so timing differences stay visible.</p>
   <h3 data-i18n="strokeByStrokeValues">Stroke-by-stroke values</h3>
   <table id="allStrokeTable">
-    <thead><tr><th>#</th><th data-i18n="athlete">Athlete</th><th data-i18n="time">Time</th><th data-i18n="strokeTime">Stroke time</th><th data-i18n="strokeRate">Stroke rate</th><th data-i18n="strongestSeatDriveSpeed">Strongest seat drive speed</th><th data-i18n="peakAcceleration">SEAT-only peak acceleration</th><th data-i18n="boatVelocityChange">BOAT velocity change</th><th data-i18n="smoothness">Smoothness</th></tr></thead>
+    <thead><tr><th>#</th><th data-i18n="athlete">Athlete</th><th data-i18n="time">Time</th><th data-i18n="strokeTime">Stroke time</th><th data-i18n="strokeRate">Stroke rate</th><th data-i18n="strongestSeatDriveSpeed">Strongest seat drive speed</th><th data-i18n="peakAcceleration">Strongest SEAT drive acceleration</th><th data-i18n="boatVelocityChange">BOAT velocity change</th><th data-i18n="smoothness">Smoothness</th></tr></thead>
     <tbody></tbody>
   </table>
 </section>
@@ -776,7 +783,7 @@ const I18N = {{
     strokeOverlayNote: "Nakładanie pociągnięć: wybrane pociągnięcia zaczynają się od 0 s i zachowują rzeczywisty czas trwania, więc różnice czasowe pozostają widoczne.",
     strokeByStrokeValues: "Wartości pociągnięcie po pociągnięciu",
     strokeTime: "Czas pociągnięcia",
-    peakAcceleration: "Szczytowe przyspieszenie tylko SEAT",
+    peakAcceleration: "Największe przyspieszenie SEAT w napędzie",
     boatVelocityGain: "Zmiana proxy prędkości BOAT",
     boatVelocityChange: "Zmiana proxy prędkości BOAT",
     axis: "Oś",
@@ -793,7 +800,7 @@ const I18N = {{
     timeDriveChange: "Czas od jednej zmiany kierunku napędu do następnej",
     paceForStroke: "Tempo dla tego pociągnięcia",
     whereSeatFastest: "Miejsce, w którym siedzisko porusza się najszybciej",
-    strongestSeatAcceleration: "Najsilniejsze przyspieszenie siedziska",
+    strongestSeatAcceleration: "Największa siła przyspieszenia siedziska podczas ruchu napędowego",
     boatVelocityGainNote: "Zmiana proxy prędkości BOAT od początku do końca pociągnięcia; może być dodatnia albo ujemna",
     boatVelocityChangeNote: "Zmiana proxy prędkości BOAT od początku do końca pociągnięcia; może być dodatnia albo ujemna",
     lowerSmoother: "Niżej oznacza płynniejszy ruch siedziska",
@@ -912,6 +919,13 @@ function positivePeakIndex(values) {{
     }}
   }}
   return bestIndex;
+}}
+function strongestDriveAcceleration(acceleration, velocity) {{
+  const driveValues = acceleration
+    .map((acc, index) => (velocity[index] || 0) > 0 ? Math.abs(acc) : null)
+    .filter(value => value !== null);
+  if (driveValues.length) return Math.max(...driveValues);
+  return acceleration.length ? Math.max(...acceleration.map(value => Math.abs(value))) : 0;
 }}
 function detectDriveStarts(times, velocity, tuning) {{
   if (velocity.length < 3) return {{ starts: [], threshold: 0 }};
@@ -1055,7 +1069,7 @@ function analyzeRange(start, end) {{
       time: timeSeg,
       speed: positivePeakValue(velSeg),
       power: Math.max(...powerSeg),
-      peakAcc: seatAccSeg.length ? Math.max(...seatAccSeg) : 0,
+      peakAcc: strongestDriveAcceleration(seatAccSeg, velSeg),
       smoothness: jerkRms(timeSeg, accSeg),
       peakPhase: velSeg.length ? positivePeakIndex(velSeg) / Math.max(1, velSeg.length - 1) * 100 : 0,
       phase: Array.from({{ length: 101 }}, (_, phase) => phase),
@@ -1107,7 +1121,7 @@ function analyzeRange(start, end) {{
     rhythmStd: std(durations),
     speed: positivePeakValue(velocity),
     speedPeakPhase: strokeSegments.length ? avgStrongestSeatSpeedPhase : (velocity.length ? localTimes[speedPeakIndex] / duration * 100 : 0),
-    peakAcc: seatProcessed.smoothed.length ? Math.max(...seatProcessed.smoothed) : 0,
+    peakAcc: strongestDriveAcceleration(seatProcessed.smoothed, velocity),
     peakPower: power.length ? Math.max(...power) : 0,
     smoothness: jerkRms(localTimes, smoothed),
     avgStrokeTime: mean(durations),
@@ -1498,7 +1512,7 @@ function updateStrokeView(analysis) {{
     [text("strokeTime", "Stroke time"), `${{fmtJs(stroke.duration, 2)}} s`, text("timeDriveChange", "Time from one drive-direction change to the next")],
     [text("strokeRate", "Stroke rate"), `${{fmtJs(60 / stroke.duration, 1)}} SPM`, text("paceForStroke", "Pace for this stroke")],
     [text("strongestSeatDriveSpeed", "Strongest seat drive speed"), `${{fmtJs(stroke.peakPhase, 1)}}%`, text("whereSeatFastest", "Where the seat moves fastest in this stroke")],
-    [text("peakAcceleration", "SEAT-only peak acceleration"), `${{fmtJs(stroke.peakAcc, 3)}} m/s^2`, text("strongestSeatAcceleration", "Strongest seat acceleration in this stroke")],
+    [text("peakAcceleration", "Strongest SEAT drive acceleration"), `${{fmtJs(stroke.peakAcc, 3)}} m/s^2`, text("strongestSeatAcceleration", "Largest SEAT acceleration magnitude while the seat is moving in drive direction")],
     [text("boatVelocityChange", "BOAT velocity change"), fmtJs(stroke.boatVelocityGain, 3), text("boatVelocityChangeNote", "Signed BOAT velocity proxy change from stroke start to stroke end")],
     [text("smoothness", "Smoothness"), fmtJs(stroke.smoothness, 3), text("lowerSmoother", "Lower means a smoother seat movement")],
   ].map(card => `<div class="metric"><span>${{card[0]}}</span><strong>${{card[1]}}</strong><small>${{card[2]}}</small></div>`).join("");
@@ -1661,7 +1675,7 @@ select, button {{ font: inherit; border: 1px solid #cbd5c0; border-radius: 6px; 
 <canvas id="strokeOverlay" width="1100" height="400"></canvas>
 <p class="note">${{text("strokeOverlayNote", "Selected strokes start at 0s and keep their real duration, so timing differences stay visible.")}}</p>
 <h2>${{text("strokeByStrokeValues", "Stroke-by-stroke values")}}</h2>
-<table id="strokeTable"><thead><tr><th>#</th><th>${{text("time", "Time")}}</th><th>${{text("strokeTime", "Stroke time")}}</th><th>${{text("strokeRate", "Stroke rate")}}</th><th>${{text("strongestSeatDriveSpeed", "Strongest seat drive speed")}}</th><th>${{text("peakAcceleration", "SEAT-only peak acceleration")}}</th><th>${{text("boatVelocityChange", "BOAT velocity change")}}</th><th>${{text("smoothness", "Smoothness")}}</th></tr></thead><tbody></tbody></table>
+<table id="strokeTable"><thead><tr><th>#</th><th>${{text("time", "Time")}}</th><th>${{text("strokeTime", "Stroke time")}}</th><th>${{text("strokeRate", "Stroke rate")}}</th><th>${{text("strongestSeatDriveSpeed", "Strongest seat drive speed")}}</th><th>${{text("peakAcceleration", "Strongest SEAT drive acceleration")}}</th><th>${{text("boatVelocityChange", "BOAT velocity change")}}</th><th>${{text("smoothness", "Smoothness")}}</th></tr></thead><tbody></tbody></table>
 </main>
 <script>
 const DATA = ${{data}};
@@ -1714,7 +1728,7 @@ function renderMetrics() {{
   ["${{text("strokeRate", "Stroke rate")}}", fmt(DATA.metrics.spm, 1) + " strokes/min", "${{text("averagePace", "Average pace")}}"],
   ["${{text("rhythmConsistency", "Rhythm consistency")}}", fmt(DATA.metrics.rhythmConsistency, 0) + " / 100", "${{text("higherRegularTiming", "Higher means more regular timing")}}"],
   ["${{text("strongestSeatDriveSpeed", "Strongest seat drive speed")}}", fmt(DATA.metrics.strongestSeatDriveSpeed, 1) + "%", "${{text("whereSeatFastest", "Where the seat is fastest")}}"],
-  ["${{text("peakAcceleration", "SEAT-only peak acceleration")}}", fmt(DATA.metrics.peakAcc, 3) + " m/s^2", "${{text("strongestSeatAcceleration", "Strongest seat acceleration in this stroke")}}"],
+  ["${{text("peakAcceleration", "Strongest SEAT drive acceleration")}}", fmt(DATA.metrics.peakAcc, 3) + " m/s^2", "${{text("strongestSeatAcceleration", "Largest SEAT acceleration magnitude while the seat is moving in drive direction")}}"],
   ["${{text("smoothness", "Smoothness")}}", fmt(DATA.metrics.smoothness, 3), "${{text("lowerSmoother", "Lower means smoother seat movement")}}"],
  ];
  document.getElementById('metrics').innerHTML = cards.map(card => '<div class="metric"><span>' + esc(card[0]) + '</span><strong>' + esc(card[1]) + '</strong><small>' + esc(card[2]) + '</small></div>').join('');
@@ -1813,7 +1827,7 @@ function renderStroke() {{
   ["${{text("strokeTime", "Stroke time")}}", fmt(stroke.duration,2) + " s", "${{text("timeDriveChange", "Time from one drive-direction change to the next")}}"],
   ["${{text("strokeRate", "Stroke rate")}}", fmt(60/stroke.duration,1) + " SPM", "${{text("paceForStroke", "Pace for this stroke")}}"],
   ["${{text("strongestSeatDriveSpeed", "Strongest seat drive speed")}}", fmt(stroke.peakPhase,1) + "%", "${{text("whereSeatFastest", "Where the seat moves fastest")}}"],
-  ["${{text("peakAcceleration", "SEAT-only peak acceleration")}}", fmt(stroke.peakAcc,3) + " m/s^2", "${{text("strongestSeatAcceleration", "Strongest seat acceleration in this stroke")}}"],
+  ["${{text("peakAcceleration", "Strongest SEAT drive acceleration")}}", fmt(stroke.peakAcc,3) + " m/s^2", "${{text("strongestSeatAcceleration", "Largest SEAT acceleration magnitude while the seat is moving in drive direction")}}"],
   ["${{text("boatVelocityChange", "BOAT velocity change")}}", fmt(stroke.boatVelocityGain,3), "${{text("boatVelocityChangeNote", "Signed BOAT velocity proxy change from stroke start to stroke end")}}"],
   ["${{text("smoothness", "Smoothness")}}", fmt(stroke.smoothness,3), "${{text("lowerSmoother", "Lower means smoother seat movement")}}"],
  ].map(card => '<div class="metric"><span>' + esc(card[0]) + '</span><strong>' + esc(card[1]) + '</strong><small>' + esc(card[2]) + '</small></div>').join('');
@@ -2043,7 +2057,7 @@ def make_report_html(
         metric_card("Stroke rate", f"{fmt(analysis['stroke_rate_spm'], 1)} strokes/min", "Average pace"),
         metric_card("Rhythm consistency", f"{fmt(analysis['rhythm_consistency_score'], 0)} / 100", "Higher means more regular timing"),
         metric_card("Strongest seat drive speed", f"{fmt(analysis['speed_peak_phase_pct'], 1)}%", "Where the seat is fastest in the stroke"),
-        metric_card("SEAT-only peak acceleration", f"{fmt(analysis['peak_force_proxy'], 3)} m/s^2", "Strongest seat acceleration in the selected recording"),
+        metric_card("Strongest SEAT drive acceleration", f"{fmt(analysis['peak_force_proxy'], 3)} m/s^2", "Largest SEAT acceleration magnitude while the seat is moving in drive direction"),
         metric_card("Smoothness", f"{fmt(analysis['smoothness_jerk_rms'], 3)}", "Lower means smoother seat movement"),
     ]
     advanced_cards: list[str] = [
