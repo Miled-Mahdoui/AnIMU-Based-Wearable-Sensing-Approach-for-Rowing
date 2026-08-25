@@ -651,11 +651,8 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
   <h3 data-i18n="timeGraph">Time graph</h3>
   <div class="controls">
     <label><input class="timeMetric" value="relativeAcc" type="checkbox"> <span data-i18n="relativeAcceleration">SEAT-BOAT acceleration</span></label>
-    <label><input class="timeMetric" value="seatAcc" type="checkbox"> <span data-i18n="seatAcceleration">SEAT-only acceleration</span></label>
-    <label><input class="timeMetric" value="boatAcc" type="checkbox"> <span data-i18n="boatAcceleration">BOAT-only acceleration</span></label>
-    <label><input class="timeMetric" value="velocity" type="checkbox" checked> <span data-i18n="relativeVelocityProxy">SEAT-BOAT velocity proxy</span></label>
-    <label><input class="timeMetric" value="seatVelocity" type="checkbox" checked> <span data-i18n="seatVelocityProxy">SEAT-only velocity proxy</span></label>
-    <label><input class="timeMetric" value="boatVelocity" type="checkbox" checked> <span data-i18n="boatVelocityProxy">BOAT-only velocity proxy</span></label>
+    <label><input class="timeMetric" value="seatAcc" type="checkbox" checked> <span data-i18n="seatAcceleration">SEAT-only acceleration</span></label>
+    <label><input class="timeMetric" value="boatAcc" type="checkbox" checked> <span data-i18n="boatAcceleration">BOAT-only acceleration</span></label>
     <label><input id="normalizeTimeGraph" type="checkbox" checked> <span data-i18n="normalizeGraphLines">normalize graph lines</span></label>
     <label><input id="showStrokeEvents" type="checkbox" checked> <span data-i18n="strokeStartEndLines">stroke start/end lines</span></label>
     <label><span data-i18n="timeLabelDetail">Time label detail</span>
@@ -1184,7 +1181,7 @@ function selectedTimeMetrics(analysis, name) {{
     relativeAcc: "#1d4ed8",
     seatAcc: "#7c2d12",
     boatAcc: "#0f766e",
-    velocity: "#4338ca",
+    relativeVelocity: "#4338ca",
     seatVelocity: "#c2410c",
     boatVelocity: "#059669",
   }};
@@ -1192,9 +1189,6 @@ function selectedTimeMetrics(analysis, name) {{
     relativeAcc: text("relativeAcceleration", "SEAT-BOAT acceleration"),
     seatAcc: text("seatAcceleration", "SEAT-only acceleration"),
     boatAcc: text("boatAcceleration", "BOAT-only acceleration"),
-    velocity: text("relativeVelocityProxy", "SEAT-BOAT velocity proxy"),
-    seatVelocity: text("seatVelocityProxy", "SEAT-only velocity proxy"),
-    boatVelocity: text("boatVelocityProxy", "BOAT-only velocity proxy"),
   }};
   return Array.from(document.querySelectorAll(".timeMetric:checked")).map(input => {{
     const key = input.value;
@@ -1667,11 +1661,8 @@ select, button {{ font: inherit; border: 1px solid #cbd5c0; border-radius: 6px; 
 <h2>${{text("timeGraph", "Time graph")}}</h2>
 <div class="controls">
   <label><input class="timeMetric" value="relativeAcc" type="checkbox"> ${{text("relativeAcceleration", "SEAT-BOAT acceleration")}}</label>
-  <label><input class="timeMetric" value="seatAcc" type="checkbox"> ${{text("seatAcceleration", "SEAT-only acceleration")}}</label>
-  <label><input class="timeMetric" value="boatAcc" type="checkbox"> ${{text("boatAcceleration", "BOAT-only acceleration")}}</label>
-  <label><input class="timeMetric" value="velocity" type="checkbox" checked> ${{text("relativeVelocityProxy", "SEAT-BOAT velocity proxy")}}</label>
-  <label><input class="timeMetric" value="seatVelocity" type="checkbox" checked> ${{text("seatVelocityProxy", "SEAT-only velocity proxy")}}</label>
-  <label><input class="timeMetric" value="boatVelocity" type="checkbox" checked> ${{text("boatVelocityProxy", "BOAT-only velocity proxy")}}</label>
+  <label><input class="timeMetric" value="seatAcc" type="checkbox" checked> ${{text("seatAcceleration", "SEAT-only acceleration")}}</label>
+  <label><input class="timeMetric" value="boatAcc" type="checkbox" checked> ${{text("boatAcceleration", "BOAT-only acceleration")}}</label>
   <label><input id="normalizeTimeGraph" type="checkbox" checked> ${{text("normalizeGraphLines", "normalize graph lines")}}</label>
   <label><input id="showStrokeEvents" type="checkbox" checked> ${{text("strokeStartEndLines", "stroke start/end lines")}}</label>
   <label>${{text("timeLabelDetail", "Time label detail")}}
@@ -1792,9 +1783,6 @@ function selectedTimeSeries() {{
  relativeAcc: {{n:'SEAT-BOAT acceleration', v:DATA.acc, c:'#1d4ed8'}},
   seatAcc: {{n:'${{text("seatAcceleration", "SEAT-only acceleration")}}', v:DATA.seatAcc, c:'#7c2d12'}},
   boatAcc: {{n:'${{text("boatAcceleration", "BOAT-only acceleration")}}', v:DATA.boatAcc, c:'#0f766e'}},
-  velocity: {{n:'${{text("relativeVelocityProxy", "SEAT-BOAT velocity proxy")}}', v:DATA.velocity, c:'#4338ca'}},
-  seatVelocity: {{n:'${{text("seatVelocityProxy", "SEAT-only velocity proxy")}}', v:DATA.seatVelocity, c:'#c2410c'}},
-  boatVelocity: {{n:'${{text("boatVelocityProxy", "BOAT-only velocity proxy")}}', v:DATA.boatVelocity, c:'#059669'}},
  }};
  return Array.from(document.querySelectorAll('.timeMetric:checked')).map(input => {{
   const item = map[input.value];
