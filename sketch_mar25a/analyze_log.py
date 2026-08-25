@@ -611,6 +611,7 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
             "smoothWindow": tuning.smooth_window,
             "minPeakMs": tuning.min_peak_distance_s * 1000.0,
         },
+        "reportState": None,
     }
     data_json = json.dumps(payload, separators=(",", ":"))
     return f"""
@@ -622,6 +623,7 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
         <option value="pl">Polski</option>
       </select>
     </label>
+    <button id="downloadConfiguredReport" type="button" data-i18n="downloadConfiguredReport">Download configured coach report</button>
   </div>
   <h2 data-i18n="coachDashboard">Coach dashboard</h2>
   <p class="note" data-i18n="coachDashboardNote">Use this section to choose the forward axis, split one recording into athletes, inspect a single stroke, and export separate HTML reports.</p>
@@ -636,6 +638,7 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
     </label>
     <label><input id="invertAxis" type="checkbox"> <span data-i18n="invertForwardSign">invert forward sign</span></label>
     <label><input id="invertSeatOnly" type="checkbox"> <span data-i18n="invertSeatOnly">invert SEAT only</span></label>
+    <label><input id="invertBoatOnly" type="checkbox"> <span data-i18n="invertBoatOnly">invert BOAT only</span></label>
     <label><input id="swapSeatBoat" type="checkbox"> <span data-i18n="swapSeatBoat">swap SEAT/BOAT data</span></label>
   </div>
   <h3 data-i18n="strokeDetectionTuning">Stroke detection tuning</h3>
@@ -647,7 +650,7 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
   <p class="note" data-i18n="smoothingNote">Minimum gap controls how soon the next stroke is allowed to start. Smoothing calms the acceleration before velocity is estimated, so small vibrations are less likely to become false strokes.</p>
   <h3 data-i18n="timeGraph">Time graph</h3>
   <div class="controls">
-    <label><input class="timeMetric" value="relativeAcc" type="checkbox"> <span data-i18n="relativeAcceleration">SEAT-only acceleration</span></label>
+    <label><input class="timeMetric" value="relativeAcc" type="checkbox"> <span data-i18n="relativeAcceleration">SEAT-BOAT acceleration</span></label>
     <label><input class="timeMetric" value="seatAcc" type="checkbox" checked> <span data-i18n="seatAcceleration">SEAT-only acceleration</span></label>
     <label><input class="timeMetric" value="boatAcc" type="checkbox" checked> <span data-i18n="boatAcceleration">BOAT-only acceleration</span></label>
     <label><input id="normalizeTimeGraph" type="checkbox" checked> <span data-i18n="normalizeGraphLines">normalize graph lines</span></label>
@@ -679,12 +682,12 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
     <label><span data-i18n="strokeToInspect">Stroke to inspect</span>
       <select id="strokeSelect"></select>
     </label>
-    <label><input class="strokeMetric" value="acc" type="checkbox" checked> <span data-i18n="relativeAcceleration">SEAT-only acceleration</span></label>
+    <label><input class="strokeMetric" value="acc" type="checkbox" checked> <span data-i18n="relativeAcceleration">SEAT-BOAT acceleration</span></label>
     <label><input class="strokeMetric" value="seatAcc" type="checkbox"> <span data-i18n="seatAcceleration">SEAT-only acceleration</span></label>
     <label><input class="strokeMetric" value="boatAcc" type="checkbox"> <span data-i18n="boatAcceleration">BOAT-only acceleration</span></label>
-    <label><input class="strokeMetric" value="velocity" type="checkbox"> <span data-i18n="relativeVelocityProxy">SEAT movement speed proxy</span></label>
-    <label><input class="strokeMetric" value="seatVelocity" type="checkbox"> <span data-i18n="seatVelocityProxy">SEAT velocity proxy</span></label>
-    <label><input class="strokeMetric" value="boatVelocity" type="checkbox"> <span data-i18n="boatVelocityProxy">BOAT velocity proxy</span></label>
+    <label><input class="strokeMetric" value="velocity" type="checkbox"> <span data-i18n="relativeVelocityProxy">SEAT-BOAT velocity proxy</span></label>
+    <label><input class="strokeMetric" value="seatVelocity" type="checkbox"> <span data-i18n="seatVelocityProxy">SEAT-only velocity proxy</span></label>
+    <label><input class="strokeMetric" value="boatVelocity" type="checkbox"> <span data-i18n="boatVelocityProxy">BOAT-only velocity proxy</span></label>
     <label><input id="showAverageStroke" type="checkbox" checked> <span data-i18n="showSegmentAverage">show segment average</span></label>
     <label><span data-i18n="phaseLabels">Phase labels</span>
       <select id="phaseTickStep">
@@ -703,10 +706,10 @@ def make_interactive_dashboard(dual: dict, tuning: Tuning) -> str:
   <div class="controls">
     <label><span data-i18n="overlayMetric">Overlay metric</span>
       <select id="overlayMetric">
-        <option value="velocity" data-i18n="relativeVelocityProxy">SEAT movement speed proxy</option>
-        <option value="boatVelocity" data-i18n="boatVelocityProxy">BOAT velocity proxy</option>
-        <option value="seatVelocity" data-i18n="seatVelocityProxy">SEAT velocity proxy</option>
-        <option value="acc" data-i18n="relativeAcceleration">SEAT-only acceleration</option>
+        <option value="velocity" data-i18n="relativeVelocityProxy">SEAT-BOAT velocity proxy</option>
+        <option value="boatVelocity" data-i18n="boatVelocityProxy">BOAT-only velocity proxy</option>
+        <option value="seatVelocity" data-i18n="seatVelocityProxy">SEAT-only velocity proxy</option>
+        <option value="acc" data-i18n="relativeAcceleration">SEAT-BOAT acceleration</option>
         <option value="seatAcc" data-i18n="seatAcceleration">SEAT-only acceleration</option>
         <option value="boatAcc" data-i18n="boatAcceleration">BOAT-only acceleration</option>
       </select>
@@ -736,14 +739,16 @@ const I18N = {{
     zVerticalForward: "Z pionowa jako kierunek jazdy",
     invertForwardSign: "odwróć znak kierunku",
     invertSeatOnly: "odwróć tylko SEAT",
+    invertBoatOnly: "odwróć tylko BOAT",
     swapSeatBoat: "zamień dane SEAT/BOAT",
+    downloadConfiguredReport: "Pobierz skonfigurowany raport trenera",
     sensorAlignment: "Ustawienie czujników",
     strokeDetectionTuning: "Dostrajanie wykrywania pociągnięć",
     strokeDetectionNote: "Przy nowym ustawieniu policz ręcznie pociągnięcia w pierwszej minucie. Potem dostosuj te dwa ustawienia, aż liczba pociągnięć w panelu będzie możliwie bliska ręcznemu liczeniu.",
     minimumStrokeGap: "Wykrywanie pociągnięć: minimalny odstęp ms",
     smoothingSamples: "Wykrywanie pociągnięć: wygładzanie próbek",
     smoothingNote: "Minimalny odstęp określa, jak szybko może rozpocząć się kolejne pociągnięcie. Wygładzanie uspokaja przyspieszenie przed estymacją prędkości, dzięki czemu małe drgania rzadziej tworzą fałszywe pociągnięcia.",
-    relativeAcceleration: "Przyspieszenie tylko SEAT",
+    relativeAcceleration: "Przyspieszenie SEAT-BOAT",
     seatAcceleration: "Przyspieszenie tylko SEAT",
     boatAcceleration: "Przyspieszenie tylko BOAT",
     normalizeGraphLines: "normalizuj linie wykresu",
@@ -771,9 +776,9 @@ const I18N = {{
     timeGraphNote: "Wykres czasu pokazuje pierwszy aktywny segment. Niebieskie linie oznaczają początki pociągnięć, czerwone końce. Przeciągnij po wykresie, aby powiększyć; kliknij dwa razy, aby zresetować.",
     timeGraph: "Wykres czasu",
     strokeToInspect: "Pociągnięcie do analizy",
-    relativeVelocityProxy: "Proxy prędkości ruchu SEAT",
-    seatVelocityProxy: "Proxy prędkości SEAT",
-    boatVelocityProxy: "Proxy prędkości BOAT",
+    relativeVelocityProxy: "Proxy prędkości SEAT-BOAT",
+    seatVelocityProxy: "Proxy prędkości tylko SEAT",
+    boatVelocityProxy: "Proxy prędkości tylko BOAT",
     showSegmentAverage: "pokaż średnią segmentu",
     phaseLabels: "Etykiety fazy",
     singleStrokeGraphNote: "Wykres pojedynczego pociągnięcia: linie ciągłe pokazują wybrane pociągnięcie, przerywane średnią segmentu. Fioletowa linia pokazuje miejsce największej prędkości siedziska. Przeciągnij, aby powiększyć; kliknij dwa razy, aby zresetować.",
@@ -905,8 +910,29 @@ function jerkRms(times, smoothed) {{
   }}
   return rms(jerks);
 }}
+function maxArray(values, fallback = 0) {{
+  if (!values.length) return fallback;
+  let best = values[0];
+  for (let i = 1; i < values.length; i++) if (values[i] > best) best = values[i];
+  return best;
+}}
+function minArray(values, fallback = 0) {{
+  if (!values.length) return fallback;
+  let best = values[0];
+  for (let i = 1; i < values.length; i++) if (values[i] < best) best = values[i];
+  return best;
+}}
+function maxAbsArray(values, fallback = 0) {{
+  if (!values.length) return fallback;
+  let best = Math.abs(values[0]);
+  for (let i = 1; i < values.length; i++) {{
+    const candidate = Math.abs(values[i]);
+    if (candidate > best) best = candidate;
+  }}
+  return best;
+}}
 function positivePeakValue(values) {{
-  return values.length ? Math.max(0, Math.max(...values)) : 0;
+  return Math.max(0, maxArray(values, 0));
 }}
 function positivePeakIndex(values) {{
   if (!values.length) return 0;
@@ -921,16 +947,21 @@ function positivePeakIndex(values) {{
   return bestIndex;
 }}
 function strongestDriveAcceleration(acceleration, velocity) {{
-  const driveValues = acceleration
-    .map((acc, index) => (velocity[index] || 0) > 0 ? Math.abs(acc) : null)
-    .filter(value => value !== null);
-  if (driveValues.length) return Math.max(...driveValues);
-  return acceleration.length ? Math.max(...acceleration.map(value => Math.abs(value))) : 0;
+  let bestDrive = 0;
+  let hasDrive = false;
+  for (let i = 0; i < acceleration.length; i++) {{
+    if ((velocity[i] || 0) > 0) {{
+      const candidate = Math.abs(acceleration[i]);
+      if (!hasDrive || candidate > bestDrive) bestDrive = candidate;
+      hasDrive = true;
+    }}
+  }}
+  return hasDrive ? bestDrive : maxAbsArray(acceleration, 0);
 }}
 function detectDriveStarts(times, velocity, tuning) {{
   if (velocity.length < 3) return {{ starts: [], threshold: 0 }};
   const driveVelocity = localSpeedCurve(velocity, tuning);
-  const maxAbs = Math.max(...driveVelocity.map(value => Math.abs(value)));
+  const maxAbs = maxAbsArray(driveVelocity, 0);
   const threshold = Math.max(0.12 * std(driveVelocity), 0.04 * maxAbs, 1e-6);
   const minDistance = tuning.minPeakMs / 1000;
   const starts = [];
@@ -968,7 +999,8 @@ function resample(values, count = 101) {{
 }}
 function avgSeries(series) {{
   if (!series.length) return [];
-  const length = Math.min(...series.map(item => item.length));
+  let length = series[0].length;
+  for (let i = 1; i < series.length; i++) if (series[i].length < length) length = series[i].length;
   return Array.from({{ length }}, (_, i) => mean(series.map(item => item[i])));
 }}
 function getTuning() {{
@@ -989,12 +1021,14 @@ function sourceModeLabel() {{
   parts.push(document.getElementById("swapSeatBoat").checked && IMU_DATA.hasBoat ? text("seatBoatSwapped", "SEAT/BOAT swapped") : (IMU_DATA.hasBoat ? text("seatBoatMode", "two-sensor mode") : text("seatOnlyMode", "SEAT only")));
   if (document.getElementById("invertAxis").checked) parts.push(text("globalSignInverted", "global sign inverted"));
   if (document.getElementById("invertSeatOnly").checked) parts.push(text("seatSignInverted", "SEAT sign inverted"));
+  if (document.getElementById("invertBoatOnly").checked) parts.push(text("boatSignInverted", "BOAT sign inverted"));
   return parts.join(" · ");
 }}
 function axisValues(sourceName) {{
   const axis = document.getElementById("axisSelect").value;
   const invert = document.getElementById("invertAxis").checked ? -1 : 1;
   const seatInvert = document.getElementById("invertSeatOnly").checked ? -1 : 1;
+  const boatInvert = document.getElementById("invertBoatOnly").checked ? -1 : 1;
   const swapped = document.getElementById("swapSeatBoat").checked && IMU_DATA.hasBoat;
   const seatSource = swapped ? IMU_DATA.boat : IMU_DATA.seat;
   const boatSource = swapped ? IMU_DATA.seat : IMU_DATA.boat;
@@ -1002,15 +1036,15 @@ function axisValues(sourceName) {{
   const boatValues = boatSource?.[axis] || IMU_DATA.times.map(() => 0);
   if (sourceName === "relativeSource") {{
     return {{
-      [axis]: seatValues.map((value, index) => (value * seatInvert - boatValues[index])),
+      [axis]: seatValues.map((value, index) => (value * seatInvert - boatValues[index] * boatInvert)),
     }};
   }}
   if (sourceName === "relative") {{
     if (!IMU_DATA.hasBoat) return IMU_DATA.times.map(() => 0);
-    return seatValues.map((value, index) => (value * seatInvert - boatValues[index]) * invert);
+    return seatValues.map((value, index) => (value * seatInvert - boatValues[index] * boatInvert) * invert);
   }}
   if (sourceName === "seat") return seatValues.map(value => value * seatInvert * invert);
-  if (sourceName === "boat") return boatValues.map(value => value * invert);
+  if (sourceName === "boat") return boatValues.map(value => value * boatInvert * invert);
   return seatValues.map(value => value * seatInvert * invert);
 }}
 function processSource(times, rawValues, tuning) {{
@@ -1068,7 +1102,7 @@ function analyzeRange(start, end) {{
       end: localTimes[endIndex],
       time: timeSeg,
       speed: positivePeakValue(velSeg),
-      power: Math.max(...powerSeg),
+      power: maxArray(powerSeg, 0),
       peakAcc: strongestDriveAcceleration(seatAccSeg, velSeg),
       smoothness: jerkRms(timeSeg, accSeg),
       peakPhase: velSeg.length ? positivePeakIndex(velSeg) / Math.max(1, velSeg.length - 1) * 100 : 0,
@@ -1088,8 +1122,8 @@ function analyzeRange(start, end) {{
       boatVelocity: resample(boatVelSeg),
       boatVelocityGain: boatVelocityChange,
       boatVelocityChange,
-      seatPeakAcc: seatAccSeg.length ? Math.max(...seatAccSeg) : 0,
-      boatPeakAcc: boatAccSeg.length ? Math.max(...boatAccSeg) : 0,
+      seatPeakAcc: maxArray(seatAccSeg, 0),
+      boatPeakAcc: maxArray(boatAccSeg, 0),
     }});
   }}
   const duration = Math.max(0.001, localTimes[localTimes.length - 1] || 0);
@@ -1122,7 +1156,7 @@ function analyzeRange(start, end) {{
     speed: positivePeakValue(velocity),
     speedPeakPhase: strokeSegments.length ? avgStrongestSeatSpeedPhase : (velocity.length ? localTimes[speedPeakIndex] / duration * 100 : 0),
     peakAcc: strongestDriveAcceleration(seatProcessed.smoothed, velocity),
-    peakPower: power.length ? Math.max(...power) : 0,
+    peakPower: maxArray(power, 0),
     smoothness: jerkRms(localTimes, smoothed),
     avgStrokeTime: mean(durations),
     rhythmConsistency: Math.max(0, 100 - rhythmCv),
@@ -1152,7 +1186,7 @@ function selectedTimeMetrics(analysis, name) {{
     boatVelocity: "#059669",
   }};
   const labels = {{
-    relativeAcc: text("relativeAcceleration", "SEAT-only acceleration"),
+    relativeAcc: text("relativeAcceleration", "SEAT-BOAT acceleration"),
     seatAcc: text("seatAcceleration", "SEAT-only acceleration"),
     boatAcc: text("boatAcceleration", "BOAT-only acceleration"),
   }};
@@ -1161,7 +1195,7 @@ function selectedTimeMetrics(analysis, name) {{
     let values = analysis[key];
     values = values || [];
     if (normalize && values.length) {{
-      const scale = Math.max(...values.map(value => Math.abs(value))) || 1;
+      const scale = maxAbsArray(values, 1) || 1;
       values = values.map(value => value / scale);
     }}
     return {{
@@ -1184,20 +1218,20 @@ function selectedStrokeMetrics(analysis, stroke) {{
     boatVelocity: "#059669",
   }};
   const labels = {{
-    acc: text("relativeAcceleration", "SEAT-only acceleration"),
+    acc: text("relativeAcceleration", "SEAT-BOAT acceleration"),
     seatAcc: text("seatAcceleration", "SEAT-only acceleration"),
     boatAcc: text("boatAcceleration", "BOAT-only acceleration"),
-    velocity: text("relativeVelocityProxy", "SEAT movement speed proxy"),
-    seatVelocity: text("seatVelocityProxy", "SEAT velocity proxy"),
-    boatVelocity: text("boatVelocityProxy", "BOAT velocity proxy"),
+    velocity: text("relativeVelocityProxy", "SEAT-BOAT velocity proxy"),
+    seatVelocity: text("seatVelocityProxy", "SEAT-only velocity proxy"),
+    boatVelocity: text("boatVelocityProxy", "BOAT-only velocity proxy"),
   }};
   const averageLabels = {{
-    acc: currentLanguage === "pl" ? "średnie przyspieszenie SEAT" : "avg SEAT-only acceleration",
+    acc: currentLanguage === "pl" ? "średnie przyspieszenie SEAT-BOAT" : "avg SEAT-BOAT acceleration",
     seatAcc: currentLanguage === "pl" ? "średnie przyspieszenie SEAT" : "avg SEAT-only acceleration",
     boatAcc: currentLanguage === "pl" ? "średnie przyspieszenie BOAT" : "avg BOAT-only acceleration",
-    velocity: currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "avg SEAT movement speed proxy",
-    seatVelocity: currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "avg SEAT velocity proxy",
-    boatVelocity: currentLanguage === "pl" ? "średnie proxy prędkości BOAT" : "avg BOAT velocity proxy",
+    velocity: currentLanguage === "pl" ? "średnie proxy prędkości SEAT-BOAT" : "avg SEAT-BOAT velocity proxy",
+    seatVelocity: currentLanguage === "pl" ? "średnie proxy prędkości tylko SEAT" : "avg SEAT-only velocity proxy",
+    boatVelocity: currentLanguage === "pl" ? "średnie proxy prędkości tylko BOAT" : "avg BOAT-only velocity proxy",
   }};
   const series = [];
   for (const key of choices) {{
@@ -1211,12 +1245,12 @@ function selectedStrokeMetrics(analysis, stroke) {{
 function selectedOverlayMetricInfo() {{
   const key = document.getElementById("overlayMetric").value;
   const labels = {{
-    acc: text("relativeAcceleration", "SEAT-only acceleration"),
+    acc: text("relativeAcceleration", "SEAT-BOAT acceleration"),
     seatAcc: text("seatAcceleration", "SEAT-only acceleration"),
     boatAcc: text("boatAcceleration", "BOAT-only acceleration"),
-    velocity: text("relativeVelocityProxy", "SEAT movement speed proxy"),
-    seatVelocity: text("seatVelocityProxy", "SEAT velocity proxy"),
-    boatVelocity: text("boatVelocityProxy", "BOAT velocity proxy"),
+    velocity: text("relativeVelocityProxy", "SEAT-BOAT velocity proxy"),
+    seatVelocity: text("seatVelocityProxy", "SEAT-only velocity proxy"),
+    boatVelocity: text("boatVelocityProxy", "BOAT-only velocity proxy"),
   }};
   return {{ key, label: labels[key] || key }};
 }}
@@ -1335,8 +1369,8 @@ function drawCanvas(canvas, xValues, series, xLabel, options = {{}}) {{
     ctx.fillText(text("noData", "No data in this graph/zoom window"), 56, 60);
     return;
   }}
-  let minX = Math.min(...xValues), maxX = Math.max(...xValues);
-  let minY = Math.min(...ys), maxY = Math.max(...ys);
+  let minX = minArray(xValues), maxX = maxArray(xValues);
+  let minY = minArray(ys), maxY = maxArray(ys);
   if (minX === maxX) maxX = minX + 1;
   if (minY === maxY) {{ minY -= 1; maxY += 1; }}
   const padY = (maxY - minY) * 0.08;
@@ -1513,7 +1547,7 @@ function updateStrokeView(analysis) {{
     [text("strokeRate", "Stroke rate"), `${{fmtJs(60 / stroke.duration, 1)}} SPM`, text("paceForStroke", "Pace for this stroke")],
     [text("strongestSeatDriveSpeed", "Strongest seat drive speed"), `${{fmtJs(stroke.peakPhase, 1)}}%`, text("whereSeatFastest", "Where the seat moves fastest in this stroke")],
     [text("peakAcceleration", "Strongest SEAT drive acceleration"), `${{fmtJs(stroke.peakAcc, 3)}} m/s^2`, text("strongestSeatAcceleration", "Largest SEAT acceleration magnitude while the seat is moving in drive direction")],
-    [text("boatVelocityChange", "BOAT velocity change"), fmtJs(stroke.boatVelocityGain, 3), text("boatVelocityChangeNote", "Signed BOAT velocity proxy change from stroke start to stroke end")],
+    [text("boatVelocityChange", "BOAT velocity change"), fmtJs(stroke.boatVelocityGain, 3), text("boatVelocityChangeNote", "Signed BOAT-only velocity proxy change from stroke start to stroke end")],
     [text("smoothness", "Smoothness"), fmtJs(stroke.smoothness, 3), text("lowerSmoother", "Lower means a smoother seat movement")],
   ].map(card => `<div class="metric"><span>${{card[0]}}</span><strong>${{card[1]}}</strong><small>${{card[2]}}</small></div>`).join("");
   drawCanvas(
@@ -1626,7 +1660,7 @@ select, button {{ font: inherit; border: 1px solid #cbd5c0; border-radius: 6px; 
 <textarea id="coachComment" placeholder="${{htmlEscapeText(text("shortNoteForAthlete", "Write a short note for the athlete..."))}}"></textarea>
 <h2>${{text("timeGraph", "Time graph")}}</h2>
 <div class="controls">
-  <label><input class="timeMetric" value="relativeAcc" type="checkbox"> ${{text("relativeAcceleration", "SEAT-only acceleration")}}</label>
+  <label><input class="timeMetric" value="relativeAcc" type="checkbox"> ${{text("relativeAcceleration", "SEAT-BOAT acceleration")}}</label>
   <label><input class="timeMetric" value="seatAcc" type="checkbox" checked> ${{text("seatAcceleration", "SEAT-only acceleration")}}</label>
   <label><input class="timeMetric" value="boatAcc" type="checkbox" checked> ${{text("boatAcceleration", "BOAT-only acceleration")}}</label>
   <label><input id="normalizeTimeGraph" type="checkbox" checked> ${{text("normalizeGraphLines", "normalize graph lines")}}</label>
@@ -1647,12 +1681,12 @@ select, button {{ font: inherit; border: 1px solid #cbd5c0; border-radius: 6px; 
 <h2>${{text("selectedStroke", "Selected stroke")}}</h2>
 <div class="controls">
   <label>${{text("strokes", "Stroke")}} <select id="strokeSelect"></select></label>
-  <label><input class="strokeMetric" value="acc" type="checkbox" checked> ${{text("relativeAcceleration", "SEAT-only acceleration")}}</label>
+  <label><input class="strokeMetric" value="acc" type="checkbox" checked> ${{text("relativeAcceleration", "SEAT-BOAT acceleration")}}</label>
   <label><input class="strokeMetric" value="seatAcc" type="checkbox"> ${{text("seatAcceleration", "SEAT-only acceleration")}}</label>
   <label><input class="strokeMetric" value="boatAcc" type="checkbox"> ${{text("boatAcceleration", "BOAT-only acceleration")}}</label>
-  <label><input class="strokeMetric" value="velocity" type="checkbox"> ${{text("relativeVelocityProxy", "SEAT movement speed proxy")}}</label>
-  <label><input class="strokeMetric" value="seatVelocity" type="checkbox"> ${{text("seatVelocityProxy", "SEAT velocity proxy")}}</label>
-  <label><input class="strokeMetric" value="boatVelocity" type="checkbox"> ${{text("boatVelocityProxy", "BOAT velocity proxy")}}</label>
+  <label><input class="strokeMetric" value="velocity" type="checkbox"> ${{text("relativeVelocityProxy", "SEAT-BOAT velocity proxy")}}</label>
+  <label><input class="strokeMetric" value="seatVelocity" type="checkbox"> ${{text("seatVelocityProxy", "SEAT-only velocity proxy")}}</label>
+  <label><input class="strokeMetric" value="boatVelocity" type="checkbox"> ${{text("boatVelocityProxy", "BOAT-only velocity proxy")}}</label>
   <label><input id="showAverageStroke" type="checkbox" checked> ${{text("showSegmentAverage", "show average")}}</label>
 </div>
 <div id="strokeMetrics" class="grid"></div>
@@ -1662,10 +1696,10 @@ select, button {{ font: inherit; border: 1px solid #cbd5c0; border-radius: 6px; 
 <div class="controls">
   <label>${{text("overlayMetric", "Overlay metric")}}
     <select id="overlayMetric">
-      <option value="velocity">${{text("relativeVelocityProxy", "SEAT movement speed proxy")}}</option>
-      <option value="boatVelocity">${{text("boatVelocityProxy", "BOAT velocity proxy")}}</option>
-      <option value="seatVelocity">${{text("seatVelocityProxy", "SEAT velocity proxy")}}</option>
-      <option value="acc">${{text("relativeAcceleration", "SEAT-only acceleration")}}</option>
+      <option value="velocity">${{text("relativeVelocityProxy", "SEAT-BOAT velocity proxy")}}</option>
+      <option value="boatVelocity">${{text("boatVelocityProxy", "BOAT-only velocity proxy")}}</option>
+      <option value="seatVelocity">${{text("seatVelocityProxy", "SEAT-only velocity proxy")}}</option>
+      <option value="acc">${{text("relativeAcceleration", "SEAT-BOAT acceleration")}}</option>
       <option value="seatAcc">${{text("seatAcceleration", "SEAT-only acceleration")}}</option>
       <option value="boatAcc">${{text("boatAcceleration", "BOAT-only acceleration")}}</option>
     </select>
@@ -1685,8 +1719,11 @@ let strokeZoomRange = null;
 let strokeVelocityZoomRange = null;
 let strokeOverlayZoomRange = null;
 let selectedOverlayStrokes = new Set([0, 1, 2]);
-function fmt(value, digits=2) {{ return Number.isFinite(value) ? value.toFixed(digits) : "-"; }}
-function esc(value) {{ return String(value).replace(/[&<>"']/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c])); }}
+	function fmt(value, digits=2) {{ return Number.isFinite(value) ? value.toFixed(digits) : "-"; }}
+	function esc(value) {{ return String(value).replace(/[&<>"']/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c])); }}
+	function maxArray(values, fallback=0) {{ if(!values.length) return fallback; let best=values[0]; for(let i=1;i<values.length;i++) if(values[i]>best) best=values[i]; return best; }}
+	function minArray(values, fallback=0) {{ if(!values.length) return fallback; let best=values[0]; for(let i=1;i<values.length;i++) if(values[i]<best) best=values[i]; return best; }}
+	function maxAbsArray(values, fallback=0) {{ if(!values.length) return fallback; let best=Math.abs(values[0]); for(let i=1;i<values.length;i++) {{ const candidate=Math.abs(values[i]); if(candidate>best) best=candidate; }} return best; }}
 function formatTick(value, phase) {{
  if (phase) return value.toFixed(0) + '%';
  const digits = Number(document.getElementById('timePrecision')?.value || 1);
@@ -1709,7 +1746,7 @@ function draw(canvas, x, series, events, zoom, phase) {{
  ctx.clearRect(0,0,w,h); ctx.fillStyle='white'; ctx.fillRect(0,0,w,h);
  const p={{l:56,r:18,t:28,b:78}}, pw=w-p.l-p.r, ph=h-p.t-p.b;
  const ys=series.flatMap(s=>s.v).filter(Number.isFinite); if(!x.length||!ys.length) {{ ctx.fillStyle='#667064'; ctx.font='14px system-ui'; ctx.fillText('No data in this graph/zoom window', 56, 60); return; }}
- let minX=Math.min(...x), maxX=Math.max(...x), minY=Math.min(...ys), maxY=Math.max(...ys);
+	 let minX=minArray(x), maxX=maxArray(x), minY=minArray(ys), maxY=maxArray(ys);
  if(minX===maxX) maxX=minX+1; if(minY===maxY){{minY-=1;maxY+=1;}}
  const py=(maxY-minY)*0.08; minY-=py; maxY+=py;
  const sx=v=>p.l+(v-minX)/(maxX-minX)*pw, sy=v=>p.t+(maxY-v)/(maxY-minY)*ph;
@@ -1737,13 +1774,13 @@ function renderStrokeTable() {{
  document.querySelector('#strokeTable tbody').innerHTML = DATA.strokes.map((s, i) => '<tr><td>' + (i + 1) + '</td><td>' + fmt(s.start,2) + '-' + fmt(s.end,2) + 's</td><td>' + fmt(s.duration,2) + 's</td><td>' + fmt(60/s.duration,1) + ' SPM</td><td>' + fmt(s.peakPhase,1) + '%</td><td>' + fmt(s.peakAcc,3) + ' m/s^2</td><td>' + fmt(s.boatVelocityGain,3) + '</td><td>' + fmt(s.smoothness,3) + '</td></tr>').join('');
 }}
 function normalize(values) {{
- const scale = Math.max(...values.map(value => Math.abs(value))) || 1;
+ const scale = maxAbsArray(values, 1) || 1;
  return values.map(value => value / scale);
 }}
 function selectedTimeSeries() {{
  const normalizeLines = document.getElementById('normalizeTimeGraph').checked;
  const map = {{
- relativeAcc: {{n:'SEAT-only acceleration', v:DATA.acc, c:'#1d4ed8'}},
+ relativeAcc: {{n:'SEAT-BOAT acceleration', v:DATA.acc, c:'#1d4ed8'}},
   seatAcc: {{n:'${{text("seatAcceleration", "SEAT-only acceleration")}}', v:DATA.seatAcc, c:'#7c2d12'}},
   boatAcc: {{n:'${{text("boatAcceleration", "BOAT-only acceleration")}}', v:DATA.boatAcc, c:'#0f766e'}},
  }};
@@ -1756,12 +1793,12 @@ function selectedTimeSeries() {{
 function selectedStrokeSeries(stroke) {{
  const showAverage = document.getElementById('showAverageStroke').checked;
  const map = {{
-  acc: {{n:'${{text("relativeAcceleration", "selected SEAT-only acceleration")}}', avg:'${{currentLanguage === "pl" ? "średnie przyspieszenie SEAT" : "average SEAT-only acceleration"}}', v:stroke.acc, av:DATA.avgAcc, c:'#1d4ed8'}},
+  acc: {{n:'${{text("relativeAcceleration", "selected SEAT-BOAT acceleration")}}', avg:'${{currentLanguage === "pl" ? "średnie przyspieszenie SEAT-BOAT" : "average SEAT-BOAT acceleration"}}', v:stroke.acc, av:DATA.avgAcc, c:'#1d4ed8'}},
   seatAcc: {{n:'${{text("seatAcceleration", "selected SEAT-only acceleration")}}', avg:'${{currentLanguage === "pl" ? "średnie przyspieszenie SEAT" : "average SEAT-only acceleration"}}', v:stroke.seatAcc, av:DATA.avgSeatAcc, c:'#7c2d12'}},
   boatAcc: {{n:'${{text("boatAcceleration", "selected BOAT-only acceleration")}}', avg:'${{currentLanguage === "pl" ? "średnie przyspieszenie BOAT" : "average BOAT-only acceleration"}}', v:stroke.boatAcc, av:DATA.avgBoatAcc, c:'#0f766e'}},
-  velocity: {{n:'${{text("relativeVelocityProxy", "selected SEAT movement speed proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "average SEAT movement speed proxy"}}', v:stroke.velocity, av:DATA.avgVelocity, c:'#6d28d9'}},
-  seatVelocity: {{n:'${{text("seatVelocityProxy", "selected SEAT velocity proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "average SEAT velocity proxy"}}', v:stroke.seatVelocity, av:DATA.avgSeatVelocity, c:'#c2410c'}},
-  boatVelocity: {{n:'${{text("boatVelocityProxy", "selected BOAT velocity proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości BOAT" : "average BOAT velocity proxy"}}', v:stroke.boatVelocity, av:DATA.avgBoatVelocity, c:'#059669'}},
+  velocity: {{n:'${{text("relativeVelocityProxy", "selected SEAT-BOAT velocity proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości SEAT-BOAT" : "average SEAT-BOAT velocity proxy"}}', v:stroke.velocity, av:DATA.avgVelocity, c:'#6d28d9'}},
+  seatVelocity: {{n:'${{text("seatVelocityProxy", "selected SEAT-only velocity proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości tylko SEAT" : "average SEAT-only velocity proxy"}}', v:stroke.seatVelocity, av:DATA.avgSeatVelocity, c:'#c2410c'}},
+  boatVelocity: {{n:'${{text("boatVelocityProxy", "selected BOAT-only velocity proxy")}}', avg:'${{currentLanguage === "pl" ? "średnie proxy prędkości tylko BOAT" : "average BOAT-only velocity proxy"}}', v:stroke.boatVelocity, av:DATA.avgBoatVelocity, c:'#059669'}},
  }};
  const series = [];
  for (const input of Array.from(document.querySelectorAll('.strokeMetric:checked'))) {{
@@ -1774,12 +1811,12 @@ function selectedStrokeSeries(stroke) {{
 function selectedOverlayMetricInfo() {{
  const key = document.getElementById('overlayMetric').value;
  const labels = {{
-  acc:'SEAT-only acceleration',
+  acc:'SEAT-BOAT acceleration',
   seatAcc:'SEAT-only acceleration',
   boatAcc:'BOAT-only acceleration',
-  velocity:'SEAT movement speed proxy',
-  seatVelocity:'SEAT velocity proxy',
-  boatVelocity:'BOAT velocity proxy',
+  velocity:'SEAT-BOAT velocity proxy',
+  seatVelocity:'SEAT-only velocity proxy',
+  boatVelocity:'BOAT-only velocity proxy',
  }};
  return {{key:key, label:labels[key] || key}};
 }}
@@ -1828,13 +1865,13 @@ function renderStroke() {{
   ["${{text("strokeRate", "Stroke rate")}}", fmt(60/stroke.duration,1) + " SPM", "${{text("paceForStroke", "Pace for this stroke")}}"],
   ["${{text("strongestSeatDriveSpeed", "Strongest seat drive speed")}}", fmt(stroke.peakPhase,1) + "%", "${{text("whereSeatFastest", "Where the seat moves fastest")}}"],
   ["${{text("peakAcceleration", "Strongest SEAT drive acceleration")}}", fmt(stroke.peakAcc,3) + " m/s^2", "${{text("strongestSeatAcceleration", "Largest SEAT acceleration magnitude while the seat is moving in drive direction")}}"],
-  ["${{text("boatVelocityChange", "BOAT velocity change")}}", fmt(stroke.boatVelocityGain,3), "${{text("boatVelocityChangeNote", "Signed BOAT velocity proxy change from stroke start to stroke end")}}"],
+  ["${{text("boatVelocityChange", "BOAT velocity change")}}", fmt(stroke.boatVelocityGain,3), "${{text("boatVelocityChangeNote", "Signed BOAT-only velocity proxy change from stroke start to stroke end")}}"],
   ["${{text("smoothness", "Smoothness")}}", fmt(stroke.smoothness,3), "${{text("lowerSmoother", "Lower means smoother seat movement")}}"],
  ].map(card => '<div class="metric"><span>' + esc(card[0]) + '</span><strong>' + esc(card[1]) + '</strong><small>' + esc(card[2]) + '</small></div>').join('');
  draw(document.getElementById('stroke'), stroke.phase, selectedStrokeSeries(stroke), [{{time:stroke.peakPhase,color:'#6d28d9',label:'strongest speed'}}], strokeZoomRange, true);
  draw(document.getElementById('strokeVelocity'), stroke.phase, [
-  {{n:'${{text("relativeVelocityProxy", "selected SEAT movement speed proxy")}}', v:stroke.velocity, c:'#6d28d9'}},
-  {{n:'${{currentLanguage === "pl" ? "średnie proxy prędkości SEAT" : "average SEAT movement speed proxy"}}', v:DATA.avgVelocity, c:'#7c2d12'}},
+  {{n:'${{text("relativeVelocityProxy", "selected SEAT-BOAT velocity proxy")}}', v:stroke.velocity, c:'#6d28d9'}},
+  {{n:'${{currentLanguage === "pl" ? "średnie proxy prędkości SEAT-BOAT" : "average SEAT-BOAT velocity proxy"}}', v:DATA.avgVelocity, c:'#7c2d12'}},
  ], [{{time:stroke.peakPhase,color:'#6d28d9',label:'strongest speed'}}], strokeVelocityZoomRange, true);
  renderOverlay();
 }}
@@ -1913,6 +1950,129 @@ function downloadTextFile(filename, text) {{
 function safeFilename(value) {{
   return String(value).replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "") || "segment";
 }}
+function checkedValues(selector) {{
+  return Array.from(document.querySelectorAll(selector))
+    .filter(input => input.checked)
+    .map(input => input.value);
+}}
+function setCheckedValues(selector, values) {{
+  const selected = new Set(values || []);
+  document.querySelectorAll(selector).forEach(input => {{
+    input.checked = selected.has(input.value);
+  }});
+}}
+function syncSegmentsFromTable() {{
+  document.querySelectorAll("#segmentTable tbody [data-index]").forEach(input => {{
+    const index = Number(input.dataset.index);
+    if (!Number.isInteger(index) || !segments[index]) return;
+    if (input.dataset.action === "name") segments[index].name = input.value;
+    if (input.dataset.action === "start") segments[index].start = Number(input.value);
+    if (input.dataset.action === "end") segments[index].end = Number(input.value);
+    if (input.dataset.action === "comment") segments[index].comment = input.value;
+    if (input.dataset.action === "toggle") segments[index].enabled = input.checked;
+  }});
+}}
+function cloneRange(range) {{
+  return range ? {{ start: range.start, end: range.end }} : null;
+}}
+function collectReportState() {{
+  syncSegmentsFromTable();
+  return {{
+    version: 1,
+    language: currentLanguage,
+    controls: {{
+      axisSelect: document.getElementById("axisSelect").value,
+      invertAxis: document.getElementById("invertAxis").checked,
+      invertSeatOnly: document.getElementById("invertSeatOnly").checked,
+      invertBoatOnly: document.getElementById("invertBoatOnly").checked,
+      swapSeatBoat: document.getElementById("swapSeatBoat").checked,
+      minPeakMs: document.getElementById("minPeakMs").value,
+      smoothWindow: document.getElementById("smoothWindow").value,
+      showStrokeEvents: document.getElementById("showStrokeEvents").checked,
+      normalizeTimeGraph: document.getElementById("normalizeTimeGraph").checked,
+      timePrecision: document.getElementById("timePrecision").value,
+      showAverageStroke: document.getElementById("showAverageStroke").checked,
+      phaseTickStep: document.getElementById("phaseTickStep").value,
+      overlayMetric: document.getElementById("overlayMetric").value,
+      strokeSelect: document.getElementById("strokeSelect").value,
+    }},
+    checked: {{
+      timeMetrics: checkedValues(".timeMetric"),
+      strokeMetrics: checkedValues(".strokeMetric"),
+    }},
+    zoom: {{
+      time: cloneRange(zoomRange),
+      stroke: cloneRange(strokeZoomRange),
+      strokeVelocity: cloneRange(strokeVelocityZoomRange),
+      strokeOverlay: cloneRange(strokeOverlayZoomRange),
+      zoomStart: document.getElementById("zoomStart").value,
+      zoomEnd: document.getElementById("zoomEnd").value,
+    }},
+    selectedOverlayStrokes: Array.from(selectedOverlayStrokes),
+    selectedStrokeIndex,
+    segments: segments.map(segment => ({{
+      name: segment.name,
+      start: segment.start,
+      end: segment.end,
+      color: segment.color,
+      enabled: segment.enabled,
+      comment: segment.comment || "",
+    }})),
+  }};
+}}
+function applyReportState(state) {{
+  if (!state) return;
+  const controls = state.controls || {{}};
+  Object.entries(controls).forEach(([id, value]) => {{
+    const element = document.getElementById(id);
+    if (!element) return;
+    if (element.type === "checkbox") element.checked = Boolean(value);
+    else element.value = value;
+  }});
+  if (state.checked) {{
+    setCheckedValues(".timeMetric", state.checked.timeMetrics);
+    setCheckedValues(".strokeMetric", state.checked.strokeMetrics);
+  }}
+  if (state.zoom) {{
+    zoomRange = cloneRange(state.zoom.time);
+    strokeZoomRange = cloneRange(state.zoom.stroke);
+    strokeVelocityZoomRange = cloneRange(state.zoom.strokeVelocity);
+    strokeOverlayZoomRange = cloneRange(state.zoom.strokeOverlay);
+    document.getElementById("zoomStart").value = state.zoom.zoomStart || "";
+    document.getElementById("zoomEnd").value = state.zoom.zoomEnd || "";
+  }}
+  if (Array.isArray(state.segments)) {{
+    segments = state.segments.map((segment, index) => ({{
+      name: segment.name || `Athlete ${{index + 1}}`,
+      start: Number(segment.start) || 0,
+      end: Number(segment.end) || 0,
+      color: segment.color || palette[index % palette.length],
+      enabled: segment.enabled !== false,
+      comment: segment.comment || "",
+    }}));
+  }}
+  if (Array.isArray(state.selectedOverlayStrokes)) {{
+    selectedOverlayStrokes = new Set(state.selectedOverlayStrokes);
+  }}
+  if (Number.isFinite(Number(state.selectedStrokeIndex))) {{
+    selectedStrokeIndex = Number(state.selectedStrokeIndex);
+  }}
+  if (state.language) {{
+    currentLanguage = state.language;
+    const languageSelect = document.getElementById("languageSelect");
+    if (languageSelect) languageSelect.value = currentLanguage;
+  }}
+}}
+function configuredReportHtml() {{
+  const state = collectReportState();
+  const configuredData = {{ ...IMU_DATA, reportState: state }};
+  const replacement = `const IMU_DATA = ${{JSON.stringify(configuredData)}};`;
+  return document.documentElement.outerHTML.replace(/const IMU_DATA = .*?;\\nconst I18N =/s, replacement + "\\nconst I18N =");
+}}
+function downloadConfiguredReport() {{
+  const label = document.title.replace(/^Offline Rowing IMU Report -\\s*/i, "") || "rowing_report";
+  downloadTextFile(`${{safeFilename(label)}}_configured_report.html`, configuredReportHtml());
+}}
 function downloadSegment(index) {{
   const segment = segments[index];
   if (!segment) return;
@@ -1968,6 +2128,7 @@ function addSegment() {{
 }}
 document.getElementById("minPeakMs").value = IMU_DATA.tuning.minPeakMs;
 document.getElementById("smoothWindow").value = IMU_DATA.tuning.smoothWindow;
+applyReportState(IMU_DATA.reportState);
 const timeCanvas = document.getElementById("timeCanvas");
 attachZoom(timeCanvas, () => zoomRange, value => {{
   zoomRange = value;
@@ -1983,6 +2144,7 @@ attachZoom(document.getElementById("strokeCanvas"), () => strokeZoomRange, value
 attachZoom(document.getElementById("strokeVelocityCanvas"), () => strokeVelocityZoomRange, value => {{ strokeVelocityZoomRange = value; }}, 1.0);
 attachZoom(document.getElementById("strokeOverlayCanvas"), () => strokeOverlayZoomRange, value => {{ strokeOverlayZoomRange = value; }}, 1.0);
 document.getElementById("addSegment").addEventListener("click", addSegment);
+document.getElementById("downloadConfiguredReport").addEventListener("click", downloadConfiguredReport);
 document.getElementById("applyZoom").addEventListener("click", () => {{
   const start = Number(document.getElementById("zoomStart").value);
   const end = Number(document.getElementById("zoomEnd").value);
@@ -2016,7 +2178,7 @@ document.getElementById("languageSelect").addEventListener("input", event => {{
   applyLanguage();
   render();
 }});
-["axisSelect", "invertAxis", "invertSeatOnly", "swapSeatBoat", "minPeakMs", "smoothWindow", "showStrokeEvents", "normalizeTimeGraph", "timePrecision", "strokeSelect", "showAverageStroke", "phaseTickStep", "overlayMetric"].forEach(id => {{
+["axisSelect", "invertAxis", "invertSeatOnly", "invertBoatOnly", "swapSeatBoat", "minPeakMs", "smoothWindow", "showStrokeEvents", "normalizeTimeGraph", "timePrecision", "strokeSelect", "showAverageStroke", "phaseTickStep", "overlayMetric"].forEach(id => {{
   document.getElementById(id).addEventListener("input", render);
 }});
 document.querySelectorAll(".timeMetric").forEach(input => input.addEventListener("change", render));
@@ -2164,7 +2326,7 @@ def make_report_html(
             "</div>",
             "<section id='joanna-method-note'>",
             "<h2>Method update for Joanna</h2>",
-            "<p>I finally understood the point from the beginning: the stroke window should describe the stroke itself, not just the distance between two acceleration peaks. The offline analysis now uses the seat movement speed proxy to detect where a stroke starts and ends. Earlier versions relied more directly on smoothed acceleration peaks, which could make the window too dependent on a strong drive peak or on small bumps in the acceleration signal.</p>",
+            "<p>I finally understood the point from the beginning: the stroke window should describe the stroke itself, not just the distance between two acceleration peaks. The offline analysis now uses the SEAT-BOAT velocity proxy to detect where a stroke starts and ends. Earlier versions relied more directly on smoothed acceleration peaks, which could make the window too dependent on a strong drive peak or on small bumps in the acceleration signal.</p>",
             "<p>The current approach is therefore based on the change into positive seat movement speed. A stroke is categorized from one detected positive drive-start movement to the next detected positive drive-start movement. This is intended to represent the rowing stroke as a time window more naturally than a peak-to-peak acceleration definition.</p>",
             "<p>This change should make the segmentation easier to explain and hopefully more accurate: the dashboard now uses velocity-based drive-start timing for categorization, while acceleration remains useful for describing the intensity and smoothness inside the detected stroke.</p>",
             "</section>",
