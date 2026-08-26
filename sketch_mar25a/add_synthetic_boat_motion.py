@@ -16,6 +16,7 @@ from pathlib import Path
 
 DEFAULT_AXIS = "acc_y_ms2"
 DEFAULT_AMPLITUDE_MS2 = 1.2
+DEFAULT_OFFSET_MS2 = 1.2
 DEFAULT_PERIOD_S = 3.0
 
 
@@ -23,20 +24,23 @@ def synthetic_boat_motion_acceleration(
     time_s: float,
     *,
     amplitude_ms2: float = DEFAULT_AMPLITUDE_MS2,
+    offset_ms2: float = DEFAULT_OFFSET_MS2,
     period_s: float = DEFAULT_PERIOD_S,
 ) -> float:
     """Return a non-negative sinusoidal acceleration component.
 
     The curve is:
 
-        a_boat_synthetic(t) = A/2 * (1 - cos(2*pi*t/T))
+        a_boat_synthetic(t) = B + A/2 * (1 - cos(2*pi*t/T))
 
-    It starts at zero, reaches A once per period, and never becomes negative.
+    With the default values it ranges from 1.2 to 2.4 m/s^2.
     """
 
     if period_s <= 0:
         raise ValueError("period_s must be positive")
-    return 0.5 * amplitude_ms2 * (1.0 - math.cos(2.0 * math.pi * time_s / period_s))
+    return offset_ms2 + 0.5 * amplitude_ms2 * (
+        1.0 - math.cos(2.0 * math.pi * time_s / period_s)
+    )
 
 
 def read_rows(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -59,6 +63,7 @@ def add_motion_to_file(
     *,
     axis: str,
     amplitude_ms2: float,
+    offset_ms2: float,
     period_s: float,
 ) -> None:
     fieldnames, rows = read_rows(input_path)
@@ -76,6 +81,7 @@ def add_motion_to_file(
         synthetic = synthetic_boat_motion_acceleration(
             time_s,
             amplitude_ms2=amplitude_ms2,
+            offset_ms2=offset_ms2,
             period_s=period_s,
         )
         row[axis] = f"{float(row[axis]) + synthetic:.6f}"
@@ -99,6 +105,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("curve_csv", type=Path)
     parser.add_argument("--axis", default=DEFAULT_AXIS)
     parser.add_argument("--amplitude-ms2", type=float, default=DEFAULT_AMPLITUDE_MS2)
+    parser.add_argument("--offset-ms2", type=float, default=DEFAULT_OFFSET_MS2)
     parser.add_argument("--period-s", type=float, default=DEFAULT_PERIOD_S)
     return parser
 
@@ -111,6 +118,7 @@ def main() -> None:
         args.curve_csv,
         axis=args.axis,
         amplitude_ms2=args.amplitude_ms2,
+        offset_ms2=args.offset_ms2,
         period_s=args.period_s,
     )
     print(f"Wrote {args.output_csv}")
