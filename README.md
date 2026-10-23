@@ -15,15 +15,21 @@ The project supports:
 
 The system is designed as a research prototype. It focuses on relative and stroke-level indicators, not exact absolute seat position or calibrated boat speed.
 
+## Final Thesis Hardware Model
+
+The final enclosure model is [Rowing_Thesis_final_print.blend](hardware/blender/Rowing_Thesis_final_print.blend).
+See the [hardware notes](hardware/blender/README.md) for opening and exporting it. Earlier Blender variants have been replaced in the current repository; their history is retained in Git.
+
 ## Repository Contents
 
 | File | Purpose |
-| `sketch_mar25a.ino` | Arduino firmware for the Feather/IMU logger |
-| `live_dashboard.py` | Live web dashboard for USB, BLE, or dual BLE |
-| `live_serial.py` | Terminal live monitor for USB serial |
-| `live_ble_uart.py` | Terminal live monitor for BLE UART |
-| `analyze_log.py` | Offline CSV analyzer and HTML report generator |
-| `technical_program_overview.pdf` | PDF version of the technical overview |
+| --- | --- |
+| `sketch_mar25a/sketch_mar25a.ino` | Arduino firmware for the Feather/IMU logger |
+| `sketch_mar25a/live_dashboard.py` | Live web dashboard for USB, BLE, or dual BLE |
+| `sketch_mar25a/live_serial.py` | Terminal live monitor for USB serial |
+| `sketch_mar25a/live_ble_uart.py` | Terminal live monitor for BLE UART |
+| `sketch_mar25a/analyze_log.py` | Offline CSV analyzer and HTML report generator |
+| `sketch_mar25a/technical_program_overview.pdf` | PDF version of the technical overview |
 
 ## Hardware
 
